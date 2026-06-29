@@ -1,0 +1,13 @@
+body {
+    background: transparent;
+    font-family: Arial;
+}
+
+#menu {
+    position: absolute;
+    top: 20%;
+    left: 40%;
+    background: black;
+    color: white;
+    padding: 20px;
+}
