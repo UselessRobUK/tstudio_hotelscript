@@ -1,17 +1,12 @@
---========================================================--
--- Standalone Hotel Framework
--- client/elevators.lua
---========================================================--
+local Config = require "configs.shared.main"
+local Hotels = require "configs.shared.hotels"
+local Notify = require "client.notifications"
 
 local Elevator = {
-    open = false,
-    currentHotel = nil,
-    currentElevator = nil
+    open            = false,
+    currentHotel    = nil,
+    currentElevator = nil,
 }
-
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
 
 local function Teleport(coords)
     DoScreenFadeOut(400)
@@ -84,7 +79,7 @@ RegisterNUICallback("elevatorSelectFloor", function(data, cb)
 
     CloseElevatorMenu()
 
-    Notify("Using elevator...")
+    Notify.Info("Using elevator...")
 
     Wait(800)
 
@@ -106,7 +101,7 @@ CreateThread(function()
         local ped = PlayerPedId()
         local coords = GetEntityCoords(ped)
 
-        for _, hotel in pairs(Config.Hotels or {}) do
+        for _, hotel in pairs(Hotels) do
             if hotel.elevators then
                 for _, elevator in pairs(hotel.elevators) do
                     local dist = #(coords - vector3(

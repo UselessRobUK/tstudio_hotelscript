@@ -1,66 +1,64 @@
---========================================================--
--- Standalone Hotel Framework
--- bridge/stash.lua
---========================================================--
+local Config = require "configs.shared.main"
 
-Bridge = Bridge or {}
-Bridge.Stash = Bridge.Stash or {}
-
-Bridge.Stash.Type = "standalone"
+local type = "standalone"
 
 if GetResourceState("ox_inventory") == "started" then
-    Bridge.Stash.Type = "ox"
+    type = "ox"
 elseif GetResourceState("qb-inventory") == "started" then
-    Bridge.Stash.Type = "qb"
+    type = "qb"
 elseif GetResourceState("qs-inventory") == "started" then
-    Bridge.Stash.Type = "qs"
+    type = "qs"
 end
 
-function Bridge.Stash.GetId(hotelId, roomId)
+---@param hotelId string
+---@param roomId number
+---@return string
+local function GetId(hotelId, roomId)
     return ("hotel_%s_%s"):format(hotelId, tonumber(roomId))
 end
 
-function Bridge.Stash.Register(hotelId, room)
-    local stashId = Bridge.Stash.GetId(hotelId, room.id)
-    local label = room.label or ("Hotel Room %s"):format(room.id)
-    local slots = room.stashSlots or Config.StashSlots or 30
-    local weight = room.stashWeight or Config.StashWeight or 50000
+---@param hotelId string
+---@param room table
+---@return boolean
+local function Register(hotelId, room)
+    local stashId = GetId(hotelId, room.id)
+    local label   = room.label or ("Hotel Room %s"):format(room.id)
+    local slots   = room.stashSlots or Config.StashSlots or 30
+    local weight  = room.stashWeight or Config.StashWeight or 50000
 
-    if Bridge.Stash.Type == "ox" then
+    if type == "ox" then
         exports.ox_inventory:RegisterStash(stashId, label, slots, weight, false)
-        return true
     end
 
     return true
 end
 
-function Bridge.Stash.Open(src, hotelId, roomId)
+---@param src number
+---@param hotelId string
+---@param roomId number
+---@return boolean
+local function Open(src, hotelId, roomId)
     TriggerClientEvent("hotel:stashApproved", src, hotelId, tonumber(roomId))
     return true
 end
 
-function Bridge.Stash.RegisterAll()
-    for _, hotel in pairs(Config.Hotels or {}) do
-        local rooms = hotel.rooms or (Config.Rooms and Config.Rooms[hotel.id]) or {}
-
-        for _, room in pairs(rooms) do
+---@param hotels table
+---@param rooms table
+local function RegisterAll(hotels, rooms)
+    for _, hotel in pairs(hotels or {}) do
+        local hotelRooms = hotel.rooms or (rooms and rooms[hotel.id]) or {}
+        for _, room in pairs(hotelRooms) do
             if room.stash then
-                Bridge.Stash.Register(hotel.id, room)
+                Register(hotel.id, room)
             end
         end
     end
 end
 
-CreateThread(function()
-    Wait(2500)
-    Bridge.Stash.RegisterAll()
-end)
-
-exports("StashType", function()
-    return Bridge.Stash.Type
-end)
-
-exports("StashGetId", Bridge.Stash.GetId)
-exports("StashRegister", Bridge.Stash.Register)
-exports("StashOpen", Bridge.Stash.Open)
-exports("StashRegisterAll", Bridge.Stash.RegisterAll)
+return {
+    type        = type,
+    GetId       = GetId,
+    Register    = Register,
+    Open        = Open,
+    RegisterAll = RegisterAll,
+}

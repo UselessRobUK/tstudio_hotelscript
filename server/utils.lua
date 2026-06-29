@@ -1,128 +1,121 @@
---========================================================--
--- Standalone Hotel Framework
--- server/utils.lua
---========================================================--
+local Config = require "configs.shared.main"
 
-Hotel = Hotel or {}
-Hotel.Utils = Hotel.Utils or {}
-
-function Hotel.Utils.Debug(...)
+---@param ... any
+local function Debug(...)
     if not Config.Debug then return end
     print("^3[HOTEL DEBUG]^7", ...)
 end
 
-function Hotel.Utils.Error(...)
+---@param ... any
+local function Error(...)
     print("^1[HOTEL ERROR]^7", ...)
 end
 
-function Hotel.Utils.Success(...)
+---@param ... any
+local function Success(...)
     print("^2[HOTEL]^7", ...)
 end
 
-function Hotel.Utils.TableCount(tbl)
+---@param tbl table
+---@return number
+local function TableCount(tbl)
     local count = 0
-
-    for _ in pairs(tbl or {}) do
-        count = count + 1
-    end
-
+    for _ in pairs(tbl or {}) do count = count + 1 end
     return count
 end
 
-function Hotel.Utils.CopyTable(tbl)
+---@param tbl table
+---@return table
+local function CopyTable(tbl)
     if type(tbl) ~= "table" then return tbl end
-
     local copy = {}
-
-    for k, v in pairs(tbl) do
-        copy[k] = Hotel.Utils.CopyTable(v)
-    end
-
+    for k, v in pairs(tbl) do copy[k] = CopyTable(v) end
     return copy
 end
 
-function Hotel.Utils.Clamp(num, min, max)
+---@param num number
+---@param min number
+---@param max number
+---@return number
+local function Clamp(num, min, max)
     num = tonumber(num) or 0
-    min = tonumber(min) or num
-    max = tonumber(max) or num
-
     if num < min then return min end
     if num > max then return max end
-
     return num
 end
 
-function Hotel.Utils.Round(num, decimals)
+---@param num number
+---@param decimals? number
+---@return number
+local function Round(num, decimals)
     local mult = 10 ^ (decimals or 0)
     return math.floor((tonumber(num) or 0) * mult + 0.5) / mult
 end
 
-function Hotel.Utils.FormatMoney(amount)
-    return ("£%s"):format(tonumber(amount) or 0)
+---@param amount number
+---@return string
+local function FormatMoney(amount)
+    return ("%s%s"):format(Config.Currency or "£", tonumber(amount) or 0)
 end
 
-function Hotel.Utils.SafeJsonEncode(data)
+---@param data any
+---@return string
+local function SafeJsonEncode(data)
     local ok, encoded = pcall(json.encode, data)
-
-    if not ok then
-        return "{}"
-    end
-
-    return encoded
+    return ok and encoded or "{}"
 end
 
-function Hotel.Utils.SafeJsonDecode(data)
+---@param data string
+---@return any
+local function SafeJsonDecode(data)
     if not data or data == "" then return nil end
-
     local ok, decoded = pcall(json.decode, data)
-
-    if not ok then
-        return nil
-    end
-
-    return decoded
+    return ok and decoded or nil
 end
 
-function Hotel.Utils.GetPlayerNameSafe(src)
+---@param src number
+---@return string
+local function GetPlayerNameSafe(src)
     return GetPlayerName(src) or ("Player %s"):format(src)
 end
 
-function Hotel.Utils.FindOnlinePlayerByIdentifier(identifier)
+---@param identifier string
+---@return number|nil
+local function FindOnlinePlayerByIdentifier(identifier)
+    local Main = require "server.main"
     for _, playerId in ipairs(GetPlayers()) do
         local src = tonumber(playerId)
-
-        if Hotel.GetIdentifier(src) == identifier then
+        if Main.GetIdentifier(src) == identifier then
             return src
         end
     end
-
     return nil
 end
 
-function Hotel.Utils.IsValidHotelId(hotelId)
-    return type(hotelId) == "string" and hotelId ~= ""
-end
-
-function Hotel.Utils.IsValidRoomId(roomId)
-    return tonumber(roomId) ~= nil
-end
-
-function Hotel.Utils.Timestamp()
+---@return number
+local function Timestamp()
     return os.time()
 end
 
-function Hotel.Utils.DateTime(timestamp)
+---@param timestamp? number
+---@return string
+local function DateTime(timestamp)
     return os.date("%d/%m/%Y %H:%M:%S", timestamp or os.time())
 end
 
-exports("HotelDebug", Hotel.Utils.Debug)
-exports("HotelError", Hotel.Utils.Error)
-exports("HotelSuccess", Hotel.Utils.Success)
-exports("HotelTableCount", Hotel.Utils.TableCount)
-exports("HotelCopyTable", Hotel.Utils.CopyTable)
-exports("HotelClamp", Hotel.Utils.Clamp)
-exports("HotelRound", Hotel.Utils.Round)
-exports("HotelFormatMoney", Hotel.Utils.FormatMoney)
-exports("HotelSafeJsonEncode", Hotel.Utils.SafeJsonEncode)
-exports("HotelSafeJsonDecode", Hotel.Utils.SafeJsonDecode)
-exports("HotelFindOnlinePlayerByIdentifier", Hotel.Utils.FindOnlinePlayerByIdentifier)
+return {
+    Debug                       = Debug,
+    Error                       = Error,
+    Success                     = Success,
+    TableCount                  = TableCount,
+    CopyTable                   = CopyTable,
+    Clamp                       = Clamp,
+    Round                       = Round,
+    FormatMoney                 = FormatMoney,
+    SafeJsonEncode              = SafeJsonEncode,
+    SafeJsonDecode              = SafeJsonDecode,
+    GetPlayerNameSafe           = GetPlayerNameSafe,
+    FindOnlinePlayerByIdentifier = FindOnlinePlayerByIdentifier,
+    Timestamp                   = Timestamp,
+    DateTime                    = DateTime,
+}

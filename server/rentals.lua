@@ -1,122 +1,101 @@
---========================================================--
--- Standalone Hotel Framework
--- server/rentals.lua
---========================================================--
+local Config = require "configs.shared.main"
+local State  = require "server.state"
 
-Hotel = Hotel or {}
-Hotel.Rentals = Hotel.Rentals or {}
+local function Main() return require "server.main" end
 
-local function Notify(src, msg, t)
-    Hotel.Notify(src, msg, t or "inform")
-end
-
+---@param identifier string
+---@return table|nil
 local function GetActiveRental(identifier)
-    local rentals = Hotel.Rentals[identifier] or {}
-
-    for _, rental in pairs(rentals) do
-        if tonumber(rental.expires) > os.time() then
-            return rental
-        end
+    for _, rental in pairs(State.Rentals[identifier] or {}) do
+        if tonumber(rental.expires) > os.time() then return rental end
     end
-
     return nil
 end
 
-function Hotel.GetActiveRental(src)
-    local identifier = Hotel.GetIdentifier(src)
+---@param src number
+---@return table|nil
+local function GetActiveRentalForPlayer(src)
+    local identifier = Main().GetIdentifier(src)
     if not identifier then return nil end
-
     return GetActiveRental(identifier)
 end
 
-function Hotel.CreateRental(src, hotelId, roomId, payment)
-    local identifier = Hotel.GetIdentifier(src)
+---@param src number
+---@param hotelId string
+---@param roomId number
+---@param payment? string
+---@return boolean, string|table
+local function CreateRental(src, hotelId, roomId, payment)
+    local identifier = Main().GetIdentifier(src)
     if not identifier then return false, "No identifier" end
 
-    local room = Hotel.GetRoom(hotelId, roomId)
+    local room = Main().GetRoom(hotelId, roomId)
     if not room then return false, "Invalid room" end
 
-    if GetActiveRental(identifier) then
-        return false, "You already have an active room"
-    end
+    if GetActiveRental(identifier) then return false, "You already have an active room" end
 
     local price = tonumber(room.price) or 0
-
     if not exports[GetCurrentResourceName()]:RemoveMoney(src, price, payment or "cash") then
         return false, "Not enough money"
     end
 
     local expires = os.time() + ((tonumber(room.duration) or 24) * 3600)
+    local rental  = { identifier = identifier, hotel = hotelId, room = tonumber(roomId), expires = expires, price = price }
 
-    local rental = {
-        identifier = identifier,
-        hotel = hotelId,
-        room = tonumber(roomId),
-        expires = expires,
-        price = price
-    }
+    State.Rentals[identifier] = State.Rentals[identifier] or {}
+    State.Rentals[identifier][#State.Rentals[identifier] + 1] = rental
 
-    Hotel.Rentals[identifier] = Hotel.Rentals[identifier] or {}
-    Hotel.Rentals[identifier][#Hotel.Rentals[identifier] + 1] = rental
+    MySQL.insert.await(
+        "INSERT INTO hotel_rentals (identifier, hotel, room, expires) VALUES (?, ?, ?, ?)",
+        { identifier, hotelId, tonumber(roomId), expires }
+    )
 
-    if MySQL then
-        MySQL.insert.await(
-            "INSERT INTO hotel_rentals (identifier, hotel, room, expires) VALUES (?, ?, ?, ?)",
-            { identifier, hotelId, tonumber(roomId), expires }
-        )
-    end
+    State.Revenue[hotelId] = (State.Revenue[hotelId] or 0) + price
 
-    Hotel.Revenue[hotelId] = (Hotel.Revenue[hotelId] or 0) + price
-
-    TriggerClientEvent("hotel:receiveKey", src, {
-        hotel = hotelId,
-        room = tonumber(roomId),
-        expires = expires
-    })
-
+    TriggerClientEvent("hotel:receiveKey", src, { hotel = hotelId, room = tonumber(roomId), expires = expires })
     TriggerClientEvent("hotel:anim:receiveKey", src)
-    Notify(src, "Room rented successfully.", "success")
-
+    Main().Notify(src, "Room rented successfully.", "success")
     return true, rental
 end
 
-function Hotel.CancelRental(src, hotelId, roomId)
-    local identifier = Hotel.GetIdentifier(src)
+---@param src number
+---@param hotelId string
+---@param roomId number
+---@return boolean
+local function CancelRental(src, hotelId, roomId)
+    local identifier = Main().GetIdentifier(src)
     if not identifier then return false end
 
-    local rentals = Hotel.Rentals[identifier] or {}
-
+    local rentals = State.Rentals[identifier] or {}
     for i = #rentals, 1, -1 do
-        local rental = rentals[i]
-
-        if rental.hotel == hotelId and tonumber(rental.room) == tonumber(roomId) then
+        if rentals[i].hotel == hotelId and tonumber(rentals[i].room) == tonumber(roomId) then
             table.remove(rentals, i)
-
-            if MySQL then
-                MySQL.query.await(
-                    "DELETE FROM hotel_rentals WHERE identifier = ? AND hotel = ? AND room = ?",
-                    { identifier, hotelId, tonumber(roomId) }
-                )
-            end
-
+            MySQL.query.await(
+                "DELETE FROM hotel_rentals WHERE identifier = ? AND hotel = ? AND room = ?",
+                { identifier, hotelId, tonumber(roomId) }
+            )
             TriggerClientEvent("hotel:removeKey", src, hotelId, tonumber(roomId))
-            Notify(src, "Rental cancelled.", "success")
-
+            Main().Notify(src, "Rental cancelled.", "success")
             return true
         end
     end
-
     return false
 end
 
-function Hotel.ExtendRental(src, hotelId, roomId, hours, payment)
-    local identifier = Hotel.GetIdentifier(src)
+---@param src number
+---@param hotelId string
+---@param roomId number
+---@param hours number
+---@param payment? string
+---@return boolean, string|table
+local function ExtendRental(src, hotelId, roomId, hours, payment)
+    local identifier = Main().GetIdentifier(src)
     if not identifier then return false, "No identifier" end
 
     hours = tonumber(hours) or 0
     if hours <= 0 then return false, "Invalid duration" end
 
-    local room = Hotel.GetRoom(hotelId, roomId)
+    local room = Main().GetRoom(hotelId, roomId)
     if not room then return false, "Invalid room" end
 
     local pricePerHour = math.ceil((tonumber(room.price) or 0) / (tonumber(room.duration) or 24))
@@ -126,28 +105,16 @@ function Hotel.ExtendRental(src, hotelId, roomId, hours, payment)
         return false, "Not enough money"
     end
 
-    local rentals = Hotel.Rentals[identifier] or {}
-
-    for _, rental in pairs(rentals) do
+    for _, rental in pairs(State.Rentals[identifier] or {}) do
         if rental.hotel == hotelId and tonumber(rental.room) == tonumber(roomId) then
             rental.expires = tonumber(rental.expires) + (hours * 3600)
-
-            if MySQL then
-                MySQL.update.await(
-                    "UPDATE hotel_rentals SET expires = ? WHERE identifier = ? AND hotel = ? AND room = ?",
-                    { rental.expires, identifier, hotelId, tonumber(roomId) }
-                )
-            end
-
-            Hotel.Revenue[hotelId] = (Hotel.Revenue[hotelId] or 0) + cost
-
-            TriggerClientEvent("hotel:receiveKey", src, {
-                hotel = hotelId,
-                room = tonumber(roomId),
-                expires = rental.expires
-            })
-
-            Notify(src, "Rental extended.", "success")
+            MySQL.update.await(
+                "UPDATE hotel_rentals SET expires = ? WHERE identifier = ? AND hotel = ? AND room = ?",
+                { rental.expires, identifier, hotelId, tonumber(roomId) }
+            )
+            State.Revenue[hotelId] = (State.Revenue[hotelId] or 0) + cost
+            TriggerClientEvent("hotel:receiveKey", src, { hotel = hotelId, room = tonumber(roomId), expires = rental.expires })
+            Main().Notify(src, "Rental extended.", "success")
             return true, rental
         end
     end
@@ -158,51 +125,33 @@ end
 RegisterNetEvent("hotel:rentRoom", function(data)
     local src = source
     if type(data) ~= "table" then return end
-
-    local ok, result = Hotel.CreateRental(
-        src,
-        data.hotelId,
-        tonumber(data.roomId),
-        data.payment or Config.DefaultPayment or "cash"
-    )
-
-    if not ok then
-        Notify(src, result or "Rental failed.", "error")
-    end
+    local ok, result = CreateRental(src, data.hotelId, tonumber(data.roomId), data.payment or Config.DefaultPayment or "cash")
+    if not ok then Main().Notify(src, result or "Rental failed.", "error") end
 end)
 
 RegisterNetEvent("hotel:cancelRental", function(hotelId, roomId)
     local src = source
-
-    if not Hotel.CancelRental(src, hotelId, tonumber(roomId)) then
-        Notify(src, "Could not cancel rental.", "error")
+    if not CancelRental(src, hotelId, tonumber(roomId)) then
+        Main().Notify(src, "Could not cancel rental.", "error")
     end
 end)
 
 RegisterNetEvent("hotel:extendRental", function(hotelId, roomId, hours, payment)
     local src = source
-
-    local ok, err = Hotel.ExtendRental(
-        src,
-        hotelId,
-        tonumber(roomId),
-        tonumber(hours),
-        payment or Config.DefaultPayment or "cash"
-    )
-
-    if not ok then
-        Notify(src, err or "Could not extend rental.", "error")
-    end
+    local ok, err = ExtendRental(src, hotelId, tonumber(roomId), tonumber(hours), payment or Config.DefaultPayment or "cash")
+    if not ok then Main().Notify(src, err or "Could not extend rental.", "error") end
 end)
 
 RegisterNetEvent("hotel:syncRental", function()
-    local src = source
-    local identifier = Hotel.GetIdentifier(src)
-
+    local src        = source
+    local identifier = Main().GetIdentifier(src)
     if not identifier then return end
-
-    TriggerClientEvent("hotel:syncKeys", src, Hotel.Rentals[identifier] or {})
+    TriggerClientEvent("hotel:syncKeys", src, State.Rentals[identifier] or {})
 end)
 
-exports("CreateHotelRental", Hotel.CreateRental)
-exports("CancelHotelRental
+exports("CreateHotelRental",       CreateRental)
+exports("CancelHotelRental",       CancelRental)
+exports("ExtendHotelRental",       ExtendRental)
+exports("GetActiveHotelRental",    GetActiveRentalForPlayer)
+
+return { CreateRental = CreateRental, CancelRental = CancelRental, ExtendRental = ExtendRental, GetActiveRental = GetActiveRentalForPlayer }

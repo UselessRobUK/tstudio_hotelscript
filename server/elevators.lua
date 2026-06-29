@@ -1,40 +1,24 @@
---========================================================--
--- Standalone Hotel Framework
--- server/elevators.lua
---========================================================--
+local function Main() return require "server.main" end
 
-Hotel = Hotel or {}
-Hotel.Elevators = Hotel.Elevators or {}
-
-function Hotel.Elevators.Get(hotelId, elevatorId)
-    local hotel = Hotel.GetHotel(hotelId)
+---@param hotelId string
+---@param elevatorId string|number
+---@return table|nil
+local function GetElevator(hotelId, elevatorId)
+    local hotel = Main().GetHotel(hotelId)
     if not hotel or not hotel.elevators then return nil end
-
     for _, elevator in pairs(hotel.elevators) do
-        if tostring(elevator.id) == tostring(elevatorId) then
-            return elevator
-        end
+        if tostring(elevator.id) == tostring(elevatorId) then return elevator end
     end
-
     return nil
 end
 
 RegisterNetEvent("hotel:getElevatorFloors", function(hotelId, elevatorId)
-    local src = source
-
-    local elevator = Hotel.Elevators.Get(hotelId, elevatorId)
-
-    if not elevator then
-        return Hotel.Notify(src, "Elevator not found.", "error")
-    end
-
-    TriggerClientEvent(
-        "hotel:openElevator",
-        src,
-        hotelId,
-        elevatorId,
-        elevator.floors or {}
-    )
+    local src      = source
+    local elevator = GetElevator(hotelId, elevatorId)
+    if not elevator then return Main().Notify(src, "Elevator not found.", "error") end
+    TriggerClientEvent("hotel:openElevator", src, hotelId, elevatorId, elevator.floors or {})
 end)
 
-exports("GetHotelElevator", Hotel.Elevators.Get)
+exports("GetHotelElevator", GetElevator)
+
+return { GetElevator = GetElevator }

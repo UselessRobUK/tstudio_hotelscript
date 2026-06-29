@@ -1,17 +1,11 @@
---========================================================--
--- Standalone Hotel Framework
--- client/zones.lua
---========================================================--
+local Config = require "configs.shared.main"
+local Hotels = require "configs.shared.hotels"
 
 local Zones = {
-    active = {},
+    active       = {},
     currentHotel = nil,
-    currentRoom = nil
+    currentRoom  = nil,
 }
-
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
 
 local function DrawText3D(coords, text)
     SetDrawOrigin(coords.x, coords.y, coords.z, 0)
@@ -30,12 +24,11 @@ end
 
 CreateThread(function()
     while true do
-        local sleep = 1000
-        local ped = PlayerPedId()
+        local sleep  = 1000
+        local ped    = PlayerPedId()
         local coords = GetEntityCoords(ped)
 
-        for _, hotel in pairs(Config.Hotels or {}) do
-
+        for _, hotel in pairs(Hotels) do
             if hotel.entrance and IsNear(coords, hotel.entrance, 2.0) then
                 sleep = 0
                 Zones.currentHotel = hotel.id
@@ -45,8 +38,7 @@ CreateThread(function()
                     "[E] Open Hotel"
                 )
 
-                if IsControlJustReleased(0, Config.InteractKey or 38) then
-                    TriggerEvent("hotel:openMenu", hotel.id)
+                if IsControlJustReleased(0, Config.InteractKey or 38) then                    TriggerEvent("hotel:openMenu", hotel.id)
                 end
             end
 
@@ -58,8 +50,7 @@ CreateThread(function()
                     "[E] Hotel Management"
                 )
 
-                if IsControlJustReleased(0, Config.InteractKey or 38) then
-                    TriggerEvent("hotel:openBossMenu", hotel.id)
+                if IsControlJustReleased(0, Config.InteractKey or 38) then                    TriggerEvent("hotel:openBossMenu", hotel.id)
                 end
             end
 
@@ -78,8 +69,7 @@ CreateThread(function()
                             ("[E] Enter %s"):format(room.label or ("Room " .. room.id))
                         )
 
-                        if IsControlJustReleased(0, Config.InteractKey or 38) then
-                            TriggerEvent("hotel:enterRoom", hotel.id, room.id)
+                        if IsControlJustReleased(0, Config.InteractKey or 38) then                            TriggerEvent("hotel:enterRoom", hotel.id, room.id)
                         end
                     end
 
@@ -91,8 +81,7 @@ CreateThread(function()
                             "[E] Open Stash"
                         )
 
-                        if IsControlJustReleased(0, Config.InteractKey or 38) then
-                            TriggerEvent("hotel:openStash", hotel.id, room.id)
+                        if IsControlJustReleased(0, Config.InteractKey or 38) then                            TriggerEvent("hotel:openStash", hotel.id, room.id)
                         end
                     end
 
@@ -104,8 +93,7 @@ CreateThread(function()
                             "[E] Wardrobe"
                         )
 
-                        if IsControlJustReleased(0, Config.InteractKey or 38) then
-                            TriggerEvent("hotel:openWardrobe", hotel.id, room.id)
+                        if IsControlJustReleased(0, Config.InteractKey or 38) then                            TriggerEvent("hotel:openWardrobe", hotel.id, room.id)
                         end
                     end
 
@@ -117,8 +105,7 @@ CreateThread(function()
                             "[E] Exit Room"
                         )
 
-                        if IsControlJustReleased(0, Config.InteractKey or 38) then
-                            TriggerEvent("hotel:exitRoom", hotel.id, room.id)
+                        if IsControlJustReleased(0, Config.InteractKey or 38) then                            TriggerEvent("hotel:exitRoom", hotel.id, room.id)
                         end
                     end
 

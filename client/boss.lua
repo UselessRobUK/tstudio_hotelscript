@@ -1,84 +1,33 @@
---========================================================--
--- Standalone Hotel Framework
--- client/boss.lua
---========================================================--
+local Notify = require "client.notifications"
 
 local Boss = {
-    open = false,
-    hotelId = nil,
-    dashboard = nil
+    open      = false,
+    hotelId   = nil,
+    dashboard = nil,
 }
 
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
-
 local function OpenBossMenu(hotelId)
-    Boss.open = true
-    Boss.hotelId = hotelId
+    local dashboard = lib.callback.await("hotel:getDashboard", false, hotelId)
+    if not dashboard then return Notify.Error("No permission.") end
+
+    Boss.open      = true
+    Boss.hotelId   = hotelId
+    Boss.dashboard = dashboard
 
     SetNuiFocus(true, true)
-
-    TriggerServerEvent("hotel:getDashboard", hotelId)
+    SendNUIMessage({ action = "openBoss", data = { hotel = hotelId, dashboard = dashboard } })
 end
 
 local function CloseBossMenu()
-    Boss.open = false
-    Boss.hotelId = nil
+    Boss.open      = false
+    Boss.hotelId   = nil
     Boss.dashboard = nil
-
     SetNuiFocus(false, false)
-
-    SendNUIMessage({
-        action = "closeBoss"
-    })
+    SendNUIMessage({ action = "closeBoss" })
 end
 
 RegisterNetEvent("hotel:openBossMenu", function(hotelId)
     OpenBossMenu(hotelId)
-end)
-
-RegisterNetEvent("hotel:receiveDashboard", function(hotelId, data)
-    Boss.hotelId = hotelId
-    Boss.dashboard = data or {}
-
-    SendNUIMessage({
-        action = "openBoss",
-        data = {
-            hotel = hotelId,
-            dashboard = Boss.dashboard
-        }
-    })
-end)
-
-RegisterNetEvent("hotel:receiveBossRooms", function(hotelId, rooms)
-    SendNUIMessage({
-        action = "bossRooms",
-        data = {
-            hotel = hotelId,
-            rooms = rooms or {}
-        }
-    })
-end)
-
-RegisterNetEvent("hotel:receiveTenants", function(hotelId, tenants)
-    SendNUIMessage({
-        action = "bossTenants",
-        data = {
-            hotel = hotelId,
-            tenants = tenants or {}
-        }
-    })
-end)
-
-RegisterNetEvent("hotel:receiveComplaints", function(hotelId, complaints)
-    SendNUIMessage({
-        action = "bossComplaints",
-        data = {
-            hotel = hotelId,
-            complaints = complaints or {}
-        }
-    })
 end)
 
 RegisterNUICallback("bossClose", function(_, cb)
@@ -87,34 +36,39 @@ RegisterNUICallback("bossClose", function(_, cb)
 end)
 
 RegisterNUICallback("bossRefresh", function(_, cb)
-    if Boss.hotelId then
-        TriggerServerEvent("hotel:getDashboard", Boss.hotelId)
+    if not Boss.hotelId then cb({ ok = false }) return end
+    local data = lib.callback.await("hotel:getDashboard", false, Boss.hotelId)
+    if data then
+        Boss.dashboard = data
+        SendNUIMessage({ action = "updateDashboard", data = { hotel = Boss.hotelId, dashboard = data } })
     end
-
     cb({ ok = true })
 end)
 
 RegisterNUICallback("bossGetRooms", function(_, cb)
-    if Boss.hotelId then
-        TriggerServerEvent("hotel:getBossRooms", Boss.hotelId)
+    if not Boss.hotelId then cb({ ok = false }) return end
+    local rooms = lib.callback.await("hotel:getBossRooms", false, Boss.hotelId)
+    if rooms then
+        SendNUIMessage({ action = "bossRooms", data = { hotel = Boss.hotelId, rooms = rooms } })
     end
-
     cb({ ok = true })
 end)
 
 RegisterNUICallback("bossGetTenants", function(_, cb)
-    if Boss.hotelId then
-        TriggerServerEvent("hotel:getTenants", Boss.hotelId)
+    if not Boss.hotelId then cb({ ok = false }) return end
+    local tenants = lib.callback.await("hotel:getTenants", false, Boss.hotelId)
+    if tenants then
+        SendNUIMessage({ action = "bossTenants", data = { hotel = Boss.hotelId, tenants = tenants } })
     end
-
     cb({ ok = true })
 end)
 
 RegisterNUICallback("bossGetComplaints", function(_, cb)
-    if Boss.hotelId then
-        TriggerServerEvent("hotel:getComplaints", Boss.hotelId)
+    if not Boss.hotelId then cb({ ok = false }) return end
+    local complaints = lib.callback.await("hotel:getComplaints", false, Boss.hotelId)
+    if complaints then
+        SendNUIMessage({ action = "bossComplaints", data = { hotel = Boss.hotelId, complaints = complaints } })
     end
-
     cb({ ok = true })
 end)
 

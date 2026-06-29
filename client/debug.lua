@@ -1,43 +1,24 @@
---========================================================--
--- Standalone Hotel Framework
--- client/debug.lua
---========================================================--
+local Config = require "configs.shared.main"
+local Hotels = require "configs.shared.hotels"
 
-Debug = {}
-
-Debug.Enabled = Config.Debug or false
-
-----------------------------------------------------------
--- Internal State
-----------------------------------------------------------
-
+local enabled     = Config.Debug or false
 local drawMarkers = false
 local drawRoomIds = false
-local drawNPCs = false
+local drawNPCs    = false
 
-----------------------------------------------------------
--- Logging
-----------------------------------------------------------
-
-function Debug.Print(...)
-    if not Debug.Enabled then return end
-
+local function DebugPrint(...)
+    if not enabled then return end
     print("^3[HOTEL DEBUG]^7", ...)
 end
 
-function Debug.Error(...)
+local function DebugError(...)
     print("^1[HOTEL ERROR]^7", ...)
 end
 
-function Debug.Success(...)
-    if not Debug.Enabled then return end
-
+local function DebugSuccess(...)
+    if not enabled then return end
     print("^2[HOTEL]^7", ...)
 end
-
-----------------------------------------------------------
--- Draw 3D Text
-----------------------------------------------------------
 
 local function Draw3D(coords, text)
 
@@ -59,23 +40,14 @@ local function Draw3D(coords, text)
 
 end
 
-----------------------------------------------------------
--- Draw Hotel Markers
-----------------------------------------------------------
-
 CreateThread(function()
-
     while true do
-
         if not drawMarkers then
-
             Wait(1000)
-
         else
-
             Wait(0)
 
-            for _, hotel in pairs(Config.Hotels or {}) do
+            for _, hotel in pairs(Hotels) do
 
                 if hotel.entrance then
 
@@ -140,23 +112,14 @@ CreateThread(function()
 
 end)
 
-----------------------------------------------------------
--- Draw NPC Labels
-----------------------------------------------------------
-
 CreateThread(function()
-
     while true do
-
         if not drawNPCs then
-
             Wait(1000)
-
         else
-
             Wait(0)
 
-            for _, hotel in pairs(Config.Hotels or {}) do
+            for _, hotel in pairs(Hotels) do
 
                 if hotel.npc then
 
@@ -179,76 +142,43 @@ CreateThread(function()
 
 end)
 
-----------------------------------------------------------
--- Commands
-----------------------------------------------------------
-
 RegisterCommand("hotel_debug", function()
-
-    Debug.Enabled = not Debug.Enabled
-
-    print("Hotel Debug:", Debug.Enabled)
-
+    enabled = not enabled
+    print("Hotel Debug:", enabled)
 end)
 
 RegisterCommand("hotel_markers", function()
-
     drawMarkers = not drawMarkers
-
     print("Hotel Markers:", drawMarkers)
-
 end)
 
 RegisterCommand("hotel_rooms", function()
-
     drawRoomIds = not drawRoomIds
-
     print("Room Labels:", drawRoomIds)
-
 end)
 
 RegisterCommand("hotel_npcs", function()
-
     drawNPCs = not drawNPCs
-
     print("NPC Labels:", drawNPCs)
-
 end)
 
 RegisterCommand("hotel_dump", function()
-
-    print(json.encode(Config.Hotels, {
-        indent = true
-    }))
-
+    print(json.encode(Hotels, { indent = true }))
 end)
-
-----------------------------------------------------------
--- Resource State
-----------------------------------------------------------
 
 AddEventHandler("onClientResourceStart", function(resource)
-
-    if resource ~= GetCurrentResourceName() then
-        return
-    end
-
-    Debug.Success("Debug Module Loaded")
-
+    if resource ~= GetCurrentResourceName() then return end
+    DebugSuccess("Debug Module Loaded")
 end)
 
-----------------------------------------------------------
--- Exports
-----------------------------------------------------------
+exports("DebugPrint",      DebugPrint)
+exports("DebugError",      DebugError)
+exports("DebugSuccess",    DebugSuccess)
+exports("IsDebugEnabled",  function() return enabled end)
 
-exports("DebugPrint", Debug.Print)
-
-exports("DebugError", Debug.Error)
-
-exports("DebugSuccess", Debug.Success)
-
-exports("IsDebugEnabled", function()
-
-    return Debug.Enabled
-
-end)
+return {
+    Print      = DebugPrint,
+    Error      = DebugError,
+    Success    = DebugSuccess,
+    IsEnabled  = function() return enabled end,
+}

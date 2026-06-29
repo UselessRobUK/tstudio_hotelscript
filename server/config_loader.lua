@@ -1,62 +1,38 @@
---========================================================--
--- Standalone Hotel Framework
--- server/config_loader.lua
---========================================================--
+local Hotels = require "configs.shared.hotels"
 
-Hotel = Hotel or {}
-Hotel.ConfigLoader = Hotel.ConfigLoader or {}
+local function Registry()    return require "server.registry" end
+local function Persistence() return require "server.persistence" end
+local function Stash()       return require "server.stash" end
+local function Main()        return require "server.main" end
+local function Security()    return require "server.security" end
 
-function Hotel.ConfigLoader.GetHotels()
-    local hotels = {}
-
-    for _, hotel in pairs(Config.Hotels or {}) do
-        hotels[hotel.id] = hotel
-    end
-
-    if Hotel.Registry then
-        for hotelId, hotel in pairs(Hotel.Registry) do
-            hotels[hotelId] = hotel
-        end
-    end
-
-    return hotels
+---@return table
+local function GetHotels()
+    local all = {}
+    for _, hotel in pairs(Hotels) do all[hotel.id] = hotel end
+    for hotelId, hotel in pairs(Registry().GetAllHotels()) do all[hotelId] = hotel end
+    return all
 end
 
-function Hotel.ConfigLoader.Reload()
-    if Hotel.Persistence and Hotel.Persistence.LoadLayouts then
-        Hotel.Persistence.LoadLayouts()
-    end
-
-    if Hotel.Stash and Hotel.Stash.RegisterAll then
-        Hotel.Stash.RegisterAll()
-    end
-
+---@return boolean
+local function Reload()
+    Persistence().LoadLayouts()
     return true
 end
 
 RegisterCommand("hotel_reload", function(src)
-    if src ~= 0 and Hotel.IsAdmin and not Hotel.IsAdmin(src) then
-        return Hotel.Notify(src, "No permission.", "error")
+    if src ~= 0 and not Security().IsAdmin(src) then
+        return Main().Notify(src, "No permission.", "error")
     end
-
-    Hotel.ConfigLoader.Reload()
-
-    if src == 0 then
-        print("^2[HOTEL]^7 Config reloaded.")
-    else
-        Hotel.Notify(src, "Hotel config reloaded.", "success")
-    end
+    Reload()
+    if src == 0 then print("^2[HOTEL]^7 Config reloaded.") else Main().Notify(src, "Hotel config reloaded.", "success") end
 end)
 
 RegisterNetEvent("hotel:getConfigHotels", function()
-    local src = source
-
-    TriggerClientEvent(
-        "hotel:receiveConfigHotels",
-        src,
-        Hotel.ConfigLoader.GetHotels()
-    )
+    TriggerClientEvent("hotel:receiveConfigHotels", source, GetHotels())
 end)
 
-exports("HotelReloadConfig", Hotel.ConfigLoader.Reload)
-exports("HotelGetConfigHotels", Hotel.ConfigLoader.GetHotels)
+exports("HotelReloadConfig",    Reload)
+exports("HotelGetConfigHotels", GetHotels)
+
+return { GetHotels = GetHotels, Reload = Reload }

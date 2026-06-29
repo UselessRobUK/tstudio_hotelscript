@@ -1,215 +1,146 @@
---========================================================--
--- Standalone Hotel Framework
--- shared/functions.lua
---========================================================--
+local Config = require "configs.shared.main"
+local Hotels = require "configs.shared.hotels"
+local Rooms  = require "configs.shared.rooms"
 
-Hotel = Hotel or {}
-Hotel.Shared = Hotel.Shared or {}
-
-----------------------------------------------------------
--- Version
-----------------------------------------------------------
-
-Hotel.Version = "1.0.0"
-
-----------------------------------------------------------
--- Math
-----------------------------------------------------------
-
-function Hotel.Shared.Round(value, decimals)
+---@param value number
+---@param decimals? number
+---@return number
+local function Round(value, decimals)
     local mult = 10 ^ (decimals or 0)
     return math.floor((tonumber(value) or 0) * mult + 0.5) / mult
 end
 
-function Hotel.Shared.Clamp(value, min, max)
+---@param value number
+---@param min number
+---@param max number
+---@return number
+local function Clamp(value, min, max)
     value = tonumber(value) or 0
-
-    if value < min then
-        return min
-    end
-
-    if value > max then
-        return max
-    end
-
+    if value < min then return min end
+    if value > max then return max end
     return value
 end
 
-----------------------------------------------------------
--- Tables
-----------------------------------------------------------
-
-function Hotel.Shared.DeepCopy(tbl)
-    if type(tbl) ~= "table" then
-        return tbl
-    end
-
+---@param tbl table
+---@return table
+local function DeepCopy(tbl)
+    if type(tbl) ~= "table" then return tbl end
     local copy = {}
-
-    for k, v in pairs(tbl) do
-        copy[k] = Hotel.Shared.DeepCopy(v)
-    end
-
+    for k, v in pairs(tbl) do copy[k] = DeepCopy(v) end
     return copy
 end
 
-function Hotel.Shared.TableCount(tbl)
+---@param tbl table
+---@return number
+local function TableCount(tbl)
     local count = 0
-
-    for _ in pairs(tbl or {}) do
-        count = count + 1
-    end
-
+    for _ in pairs(tbl or {}) do count = count + 1 end
     return count
 end
 
-----------------------------------------------------------
--- JSON
-----------------------------------------------------------
-
-function Hotel.Shared.Encode(data)
+---@param data any
+---@return string
+local function Encode(data)
     local ok, encoded = pcall(json.encode, data)
-
-    if ok then
-        return encoded
-    end
-
-    return "{}"
+    return ok and encoded or "{}"
 end
 
-function Hotel.Shared.Decode(data)
-    if not data or data == "" then
-        return nil
-    end
-
+---@param data string
+---@return any
+local function Decode(data)
+    if not data or data == "" then return nil end
     local ok, decoded = pcall(json.decode, data)
-
-    if ok then
-        return decoded
-    end
-
-    return nil
+    return ok and decoded or nil
 end
 
-----------------------------------------------------------
--- Strings
-----------------------------------------------------------
-
-function Hotel.Shared.FormatMoney(amount)
-    amount = tonumber(amount) or 0
-    return ("%s%s"):format(Config.Currency or "£", amount)
+---@param amount number
+---@return string
+local function FormatMoney(amount)
+    return ("%s%s"):format(Config.Currency or "£", tonumber(amount) or 0)
 end
 
-function Hotel.Shared.Trim(text)
+---@param text string
+---@return string
+local function Trim(text)
     return tostring(text):match("^%s*(.-)%s*$")
 end
 
-----------------------------------------------------------
--- Time
-----------------------------------------------------------
-
-function Hotel.Shared.Timestamp()
+---@return number
+local function Timestamp()
     return os.time()
 end
 
-function Hotel.Shared.FormatTime(seconds)
+---@param seconds number
+---@return string
+local function FormatTime(seconds)
     seconds = math.max(0, tonumber(seconds) or 0)
-
-    local days = math.floor(seconds / 86400)
+    local days    = math.floor(seconds / 86400)
     seconds = seconds % 86400
-
-    local hours = math.floor(seconds / 3600)
+    local hours   = math.floor(seconds / 3600)
     seconds = seconds % 3600
-
     local minutes = math.floor(seconds / 60)
-
-    if days > 0 then
-        return ("%sd %sh"):format(days, hours)
-    end
-
-    if hours > 0 then
-        return ("%sh %sm"):format(hours, minutes)
-    end
-
+    if days > 0   then return ("%sd %sh"):format(days, hours) end
+    if hours > 0  then return ("%sh %sm"):format(hours, minutes) end
     return ("%sm"):format(minutes)
 end
 
-----------------------------------------------------------
--- Hotels
-----------------------------------------------------------
-
-function Hotel.Shared.GetHotel(hotelId)
-    return Config.GetHotel(hotelId)
-end
-
-function Hotel.Shared.GetRoom(hotelId, roomId)
-    local rooms = Config.Rooms[hotelId]
-
-    if not rooms then
-        return nil
+---@param hotelId string
+---@return table|nil
+local function GetHotel(hotelId)
+    for _, hotel in pairs(Hotels) do
+        if hotel.id == hotelId then return hotel end
     end
-
-    roomId = tonumber(roomId)
-
-    for _, room in pairs(rooms) do
-        if tonumber(room.id) == roomId then
-            return room
-        end
-    end
-
     return nil
 end
 
-----------------------------------------------------------
--- Room Status
-----------------------------------------------------------
-
-function Hotel.Shared.IsLuxury(room)
-    return (room.price or 0) >= (Config.LuxuryPrice or 1000)
+---@param hotelId string
+---@param roomId number
+---@return table|nil
+local function GetRoom(hotelId, roomId)
+    local hotel = GetHotel(hotelId)
+    if hotel and hotel.rooms then
+        roomId = tonumber(roomId)
+        for _, room in pairs(hotel.rooms) do
+            if tonumber(room.id) == roomId then return room end
+        end
+    end
+    local hotelRooms = Rooms[hotelId]
+    if hotelRooms then
+        roomId = tonumber(roomId)
+        for _, room in pairs(hotelRooms) do
+            if tonumber(room.id) == roomId then return room end
+        end
+    end
+    return nil
 end
 
-function Hotel.Shared.IsSuite(room)
-    return room.type == "suite"
-end
-
-----------------------------------------------------------
--- Validation
-----------------------------------------------------------
-
-function Hotel.Shared.ValidHotel(hotelId)
-    return Hotel.Shared.GetHotel(hotelId) ~= nil
-end
-
-function Hotel.Shared.ValidRoom(hotelId, roomId)
-    return Hotel.Shared.GetRoom(hotelId, roomId) ~= nil
-end
-
-----------------------------------------------------------
--- IDs
-----------------------------------------------------------
-
-function Hotel.Shared.StashId(hotelId, roomId)
+---@param hotelId string
+---@param roomId number
+---@return string
+local function StashId(hotelId, roomId)
     return ("hotel_%s_%s"):format(hotelId, roomId)
 end
 
-function Hotel.Shared.RoomKeyId(hotelId, roomId)
+---@param hotelId string
+---@param roomId number
+---@return string
+local function RoomKeyId(hotelId, roomId)
     return ("%s_%s"):format(hotelId, roomId)
 end
 
-----------------------------------------------------------
--- Exports
-----------------------------------------------------------
-
-exports("HotelRound", Hotel.Shared.Round)
-exports("HotelClamp", Hotel.Shared.Clamp)
-exports("HotelDeepCopy", Hotel.Shared.DeepCopy)
-exports("HotelTableCount", Hotel.Shared.TableCount)
-exports("HotelEncode", Hotel.Shared.Encode)
-exports("HotelDecode", Hotel.Shared.Decode)
-exports("HotelFormatMoney", Hotel.Shared.FormatMoney)
-exports("HotelGetHotel", Hotel.Shared.GetHotel)
-exports("HotelGetRoom", Hotel.Shared.GetRoom)
-exports("HotelValidHotel", Hotel.Shared.ValidHotel)
-exports("HotelValidRoom", Hotel.Shared.ValidRoom)
-exports("HotelStashId", Hotel.Shared.StashId)
-exports("HotelRoomKeyId", Hotel.Shared.RoomKeyId)
+return {
+    Round       = Round,
+    Clamp       = Clamp,
+    DeepCopy    = DeepCopy,
+    TableCount  = TableCount,
+    Encode      = Encode,
+    Decode      = Decode,
+    FormatMoney = FormatMoney,
+    Trim        = Trim,
+    Timestamp   = Timestamp,
+    FormatTime  = FormatTime,
+    GetHotel    = GetHotel,
+    GetRoom     = GetRoom,
+    StashId     = StashId,
+    RoomKeyId   = RoomKeyId,
+}

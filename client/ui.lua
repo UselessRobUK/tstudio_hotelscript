@@ -1,76 +1,39 @@
---========================================================--
--- Standalone Hotel Framework
--- client/ui.lua
---========================================================--
+local Notify = require "client.notifications"
 
-local NuiOpen = false
+local NuiOpen      = false
 local CurrentHotel = nil
-
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
 
 local function OpenUI(action, payload)
     NuiOpen = true
     SetNuiFocus(true, true)
-
-    SendNUIMessage({
-        action = action,
-        data = payload or {}
-    })
+    SendNUIMessage({ action = action, data = payload or {} })
 end
 
 local function CloseUI()
-    NuiOpen = false
+    NuiOpen      = false
     CurrentHotel = nil
     SetNuiFocus(false, false)
-
-    SendNUIMessage({
-        action = "close"
-    })
+    SendNUIMessage({ action = "close" })
 end
 
 RegisterNetEvent("hotel:openMenu", function(hotelId)
-    CurrentHotel = hotelId
-
-    TriggerServerEvent("hotel:getRooms", hotelId)
-end)
-
-RegisterNetEvent("hotel:receiveRooms", function(hotelId, rooms)
-    CurrentHotel = hotelId
-
-    OpenUI("openHotel", {
-        hotel = hotelId,
-        rooms = rooms or {}
-    })
+    CurrentHotel  = hotelId
+    local rooms   = lib.callback.await("hotel:getRooms", false, hotelId)
+    OpenUI("openHotel", { hotel = hotelId, rooms = rooms or {} })
 end)
 
 RegisterNetEvent("hotel:openBossMenu", function(hotelId)
-    CurrentHotel = hotelId
-
-    TriggerServerEvent("hotel:getDashboard", hotelId)
-end)
-
-RegisterNetEvent("hotel:receiveDashboard", function(hotelId, data)
-    CurrentHotel = hotelId
-
-    OpenUI("openBoss", {
-        hotel = hotelId,
-        dashboard = data or {}
-    })
+    CurrentHotel     = hotelId
+    local dashboard  = lib.callback.await("hotel:getDashboard", false, hotelId)
+    if not dashboard then return Notify.Error("No permission.") end
+    OpenUI("openBoss", { hotel = hotelId, dashboard = dashboard })
 end)
 
 RegisterNetEvent("hotel:openComplaints", function(hotelId)
-    CurrentHotel = hotelId
-
-    TriggerServerEvent("hotel:getComplaints", hotelId)
-end)
-
-RegisterNetEvent("hotel:receiveComplaints", function(hotelId, complaints)
-    OpenUI("openComplaints", {
-        hotel = hotelId,
-        complaints = complaints or {}
-    })
+    CurrentHotel       = hotelId
+    local complaints   = lib.callback.await("hotel:getComplaints", false, hotelId)
+    if not complaints then return Notify.Error("No permission.") end
+    OpenUI("openComplaints", { hotel = hotelId, complaints = complaints })
 end)
 
 RegisterNUICallback("close", function(_, cb)
@@ -162,16 +125,10 @@ RegisterNUICallback("resolveComplaint", function(data, cb)
     cb({ ok = true })
 end)
 
-RegisterNetEvent("hotel:notify", function(msg)
-    BeginTextCommandThefeedPost("STRING")
-    AddTextComponentSubstringPlayerName(tostring(msg))
-    EndTextCommandThefeedPostTicker(false, false)
-end)
-
 RegisterNetEvent("hotel:uiRefreshRooms", function()
-    if CurrentHotel then
-        TriggerServerEvent("hotel:getRooms", CurrentHotel)
-    end
+    if not CurrentHotel or not NuiOpen then return end
+    local rooms = lib.callback.await("hotel:getRooms", false, CurrentHotel)
+    SendNUIMessage({ action = "updateRooms", data = { hotel = CurrentHotel, rooms = rooms or {} } })
 end)
 
 RegisterCommand("hotel_closeui", function()

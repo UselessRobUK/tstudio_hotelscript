@@ -1,204 +1,71 @@
---========================================================--
--- Standalone Hotel Framework
--- bridge/phone.lua
---========================================================--
-
-Bridge = Bridge or {}
-Bridge.Phone = Bridge.Phone or {}
-
-----------------------------------------------------------
--- Detect Installed Phone
-----------------------------------------------------------
-
-Bridge.Phone.Type = "standalone"
+local type = "standalone"
 
 if GetResourceState("lb-phone") == "started" then
-    Bridge.Phone.Type = "lb"
-
+    type = "lb"
 elseif GetResourceState("qb-phone") == "started" then
-    Bridge.Phone.Type = "qb"
-
+    type = "qb"
 elseif GetResourceState("qs-smartphone") == "started" then
-    Bridge.Phone.Type = "qs"
-
+    type = "qs"
 elseif GetResourceState("gksphone") == "started" then
-    Bridge.Phone.Type = "gks"
-
+    type = "gks"
 elseif GetResourceState("gcphone") == "started" then
-    Bridge.Phone.Type = "gc"
-
+    type = "gc"
 end
 
-----------------------------------------------------------
--- Send Notification
-----------------------------------------------------------
-
-function Bridge.Phone.Notify(src, title, message)
-
-    title = title or "Hotel"
-
+---@param src number
+---@param title string
+---@param message string
+local function Notify(src, title, message)
+    title   = title or "Hotel"
     message = message or ""
 
-    if Bridge.Phone.Type == "lb" then
-
-        exports["lb-phone"]:SendNotification(src, {
-
-            app = "Hotel",
-
-            title = title,
-
-            content = message
-
-        })
-
-        return true
-
-    elseif Bridge.Phone.Type == "qb" then
-
-        TriggerClientEvent(
-            "qb-phone:client:CustomNotification",
-            src,
-            title,
-            message,
-            "fas fa-hotel"
-        )
-
-        return true
-
-    elseif Bridge.Phone.Type == "qs" then
-
-        TriggerClientEvent(
-            "qs-smartphone:client:notify",
-            src,
-            title,
-            message
-        )
-
-        return true
-
-    elseif Bridge.Phone.Type == "gks" then
-
-        TriggerClientEvent(
-            "gksphone:notifi",
-            src,
-            {
-                title = title,
-                message = message
-            }
-        )
-
-        return true
-
-    elseif Bridge.Phone.Type == "gc" then
-
-        TriggerClientEvent(
-            "gcPhone:notify",
-            src,
-            title,
-            message
-        )
-
-        return true
-
+    if type == "lb" then
+        exports["lb-phone"]:SendNotification(src, { app = "Hotel", title = title, content = message })
+        return
+    elseif type == "qb" then
+        TriggerClientEvent("qb-phone:client:CustomNotification", src, title, message, "fas fa-hotel")
+        return
+    elseif type == "qs" then
+        TriggerClientEvent("qs-smartphone:client:notify", src, title, message)
+        return
+    elseif type == "gks" then
+        TriggerClientEvent("gksphone:notifi", src, { title = title, message = message })
+        return
+    elseif type == "gc" then
+        TriggerClientEvent("gcPhone:notify", src, title, message)
+        return
     end
 
-    --------------------------------------------------
-    -- Standalone Fallback
-    --------------------------------------------------
-
-    TriggerClientEvent(
-        "chat:addMessage",
-        src,
-        {
-            color = {52,152,219},
-            multiline = true,
-            args = {
-                title,
-                message
-            }
-        }
-    )
-
-    return true
-
+    TriggerClientEvent("chat:addMessage", src, {
+        color     = { 52, 152, 219 },
+        multiline = true,
+        args      = { title, message },
+    })
 end
 
-----------------------------------------------------------
--- Hotel Reservation Confirmation
-----------------------------------------------------------
-
-function Bridge.Phone.Booking(src, hotelName, roomNumber)
-
-    Bridge.Phone.Notify(
-
-        src,
-
-        "Hotel Booking",
-
-        ("Reservation confirmed.\n%s\nRoom %s")
-        :format(
-            hotelName,
-            roomNumber
-        )
-
-    )
-
+---@param src number
+---@param hotelName string
+---@param roomNumber number
+local function Booking(src, hotelName, roomNumber)
+    Notify(src, "Hotel Booking", ("Reservation confirmed.\n%s\nRoom %s"):format(hotelName, roomNumber))
 end
 
-----------------------------------------------------------
--- Rental Reminder
-----------------------------------------------------------
-
-function Bridge.Phone.Reminder(src, hotelName, hoursLeft)
-
-    Bridge.Phone.Notify(
-
-        src,
-
-        "Hotel Reminder",
-
-        ("%s expires in %s hour(s).")
-        :format(
-            hotelName,
-            hoursLeft
-        )
-
-    )
-
+---@param src number
+---@param hotelName string
+---@param hoursLeft number
+local function Reminder(src, hotelName, hoursLeft)
+    Notify(src, "Hotel Reminder", ("%s expires in %s hour(s)."):format(hotelName, hoursLeft))
 end
 
-----------------------------------------------------------
--- Eviction Notice
-----------------------------------------------------------
-
-function Bridge.Phone.Eviction(src)
-
-    Bridge.Phone.Notify(
-
-        src,
-
-        "Hotel",
-
-        "Your hotel rental has ended."
-
-    )
-
+---@param src number
+local function Eviction(src)
+    Notify(src, "Hotel", "Your hotel rental has ended.")
 end
 
-----------------------------------------------------------
--- Exports
-----------------------------------------------------------
-
-exports("PhoneNotify", Bridge.Phone.Notify)
-
-exports("PhoneBooking", Bridge.Phone.Booking)
-
-exports("PhoneReminder", Bridge.Phone.Reminder)
-
-exports("PhoneEviction", Bridge.Phone.Eviction)
-
-exports("PhoneType", function()
-
-    return Bridge.Phone.Type
-
-end)
+return {
+    type     = type,
+    Notify   = Notify,
+    Booking  = Booking,
+    Reminder = Reminder,
+    Eviction = Eviction,
+}

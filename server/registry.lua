@@ -1,74 +1,60 @@
---========================================================--
--- Standalone Hotel Framework
--- server/registry.lua
---========================================================--
+local Hotels = require "configs.shared.hotels"
 
-Hotel = Hotel or {}
-Hotel.Registry = Hotel.Registry or {}
+local Registry = {}
 
-function Hotel.RegisterHotel(hotelId, data)
-    if not hotelId or type(data) ~= "table" then
-        return false
-    end
-
+---@param hotelId string
+---@param data table
+---@return boolean
+local function RegisterHotel(hotelId, data)
+    if not hotelId or type(data) ~= "table" then return false end
     data.id = hotelId
-    Hotel.Registry[hotelId] = data
-
+    Registry[hotelId] = data
     return true
 end
 
-function Hotel.UnregisterHotel(hotelId)
-    Hotel.Registry[hotelId] = nil
+---@param hotelId string
+---@return boolean
+local function UnregisterHotel(hotelId)
+    Registry[hotelId] = nil
     return true
 end
 
-function Hotel.GetRegisteredHotel(hotelId)
-    return Hotel.Registry[hotelId] or Hotel.GetHotel(hotelId)
+---@param hotelId string
+---@return table|nil
+local function GetRegisteredHotel(hotelId)
+    if Registry[hotelId] then return Registry[hotelId] end
+    return (require "server.main").GetHotel(hotelId)
 end
 
-function Hotel.GetAllHotels()
-    local hotels = {}
-
-    for _, hotel in pairs(Config.Hotels or {}) do
-        hotels[hotel.id] = hotel
-    end
-
-    for id, hotel in pairs(Hotel.Registry or {}) do
-        hotels[id] = hotel
-    end
-
-    return hotels
+---@return table
+local function GetAllHotels()
+    local all = {}
+    for _, hotel in pairs(Hotels) do all[hotel.id] = hotel end
+    for id, hotel in pairs(Registry) do all[id] = hotel end
+    return all
 end
 
 RegisterNetEvent("hotel:getHotels", function()
-    local src = source
-    TriggerClientEvent("hotel:receiveHotels", src, Hotel.GetAllHotels())
+    TriggerClientEvent("hotel:receiveHotels", source, GetAllHotels())
 end)
 
 RegisterNetEvent("hotel:registerRuntimeHotel", function(hotelId, data)
-    local src = source
-
-    if Hotel.IsAdmin and not Hotel.IsAdmin(src) then
-        return Hotel.Notify(src, "No permission.", "error")
-    end
-
-    if Hotel.RegisterHotel(hotelId, data) then
-        Hotel.Notify(src, "Hotel registered.", "success")
-    end
+    local src  = source
+    local Main = require "server.main"
+    if not RegisterHotel(hotelId, data) then return end
+    Main.Notify(src, "Hotel registered.", "success")
 end)
 
 RegisterNetEvent("hotel:unregisterRuntimeHotel", function(hotelId)
-    local src = source
-
-    if Hotel.IsAdmin and not Hotel.IsAdmin(src) then
-        return Hotel.Notify(src, "No permission.", "error")
-    end
-
-    Hotel.UnregisterHotel(hotelId)
-    Hotel.Notify(src, "Hotel unregistered.", "success")
+    local src  = source
+    local Main = require "server.main"
+    UnregisterHotel(hotelId)
+    Main.Notify(src, "Hotel unregistered.", "success")
 end)
 
-exports("RegisterHotel", Hotel.RegisterHotel)
-exports("UnregisterHotel", Hotel.UnregisterHotel)
-exports("GetRegisteredHotel", Hotel.GetRegisteredHotel)
-exports("GetAllHotels", Hotel.GetAllHotels)
+exports("RegisterHotel",        RegisterHotel)
+exports("UnregisterHotel",      UnregisterHotel)
+exports("GetRegisteredHotel",   GetRegisteredHotel)
+exports("GetAllHotels",         GetAllHotels)
+
+return { RegisterHotel = RegisterHotel, UnregisterHotel = UnregisterHotel, GetAllHotels = GetAllHotels }

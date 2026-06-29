@@ -1,291 +1,85 @@
---========================================================--
--- Standalone Hotel Framework
--- client/notifications.lua
---========================================================--
-
-Notifications = {}
-
---------------------------------------------------------
--- Detect Notification Resource
---------------------------------------------------------
-
-local Provider = "standalone"
+local provider = "standalone"
 
 if GetResourceState("ox_lib") == "started" then
-    Provider = "ox"
-
+    provider = "ox"
 elseif GetResourceState("okokNotify") == "started" then
-    Provider = "okok"
-
+    provider = "okok"
 elseif GetResourceState("mythic_notify") == "started" then
-    Provider = "mythic"
-
+    provider = "mythic"
 elseif GetResourceState("qb-core") == "started" then
-    Provider = "qb"
-
+    provider = "qb"
 elseif GetResourceState("es_extended") == "started" then
-    Provider = "esx"
-
+    provider = "esx"
 end
-
---------------------------------------------------------
--- Standalone GTA Notification
---------------------------------------------------------
 
 local function GTA(message)
-
     BeginTextCommandThefeedPost("STRING")
-
     AddTextComponentSubstringPlayerName(message)
-
     EndTextCommandThefeedPostTicker(false, false)
-
 end
 
---------------------------------------------------------
--- Main Notification
---------------------------------------------------------
-
-function Notifications.Show(message, notifyType, duration)
-
+---@param message string
+---@param notifyType? string
+---@param duration? number
+local function Show(message, notifyType, duration)
     notifyType = notifyType or "inform"
+    duration   = duration or 5000
 
-    duration = duration or 5000
-
-    ----------------------------------------------------
-    -- ox_lib
-    ----------------------------------------------------
-
-    if Provider == "ox" then
-
-        lib.notify({
-
-            title = "Hotel",
-
-            description = message,
-
-            type = notifyType,
-
-            duration = duration
-
-        })
-
+    if provider == "ox" then
+        lib.notify({ title = "Hotel", description = message, type = notifyType, duration = duration })
         return
-
     end
-
-    ----------------------------------------------------
-    -- okokNotify
-    ----------------------------------------------------
-
-    if Provider == "okok" then
-
-        exports.okokNotify:Alert(
-
-            "Hotel",
-
-            message,
-
-            duration,
-
-            notifyType
-
-        )
-
+    if provider == "okok" then
+        exports.okokNotify:Alert("Hotel", message, duration, notifyType)
         return
-
     end
-
-    ----------------------------------------------------
-    -- Mythic Notify
-    ----------------------------------------------------
-
-    if Provider == "mythic" then
-
-        exports["mythic_notify"]:SendAlert(
-
-            notifyType,
-
-            message,
-
-            duration
-
-        )
-
+    if provider == "mythic" then
+        exports["mythic_notify"]:SendAlert(notifyType, message, duration)
         return
-
     end
-
-    ----------------------------------------------------
-    -- QB
-    ----------------------------------------------------
-
-    if Provider == "qb" then
-
-        TriggerEvent(
-
-            "QBCore:Notify",
-
-            message,
-
-            notifyType,
-
-            duration
-
-        )
-
+    if provider == "qb" then
+        TriggerEvent("QBCore:Notify", message, notifyType, duration)
         return
-
     end
-
-    ----------------------------------------------------
-    -- ESX
-    ----------------------------------------------------
-
-    if Provider == "esx" then
-
-        TriggerEvent(
-
-            "esx:showNotification",
-
-            message
-
-        )
-
+    if provider == "esx" then
+        TriggerEvent("esx:showNotification", message)
         return
-
     end
-
-    ----------------------------------------------------
-    -- Standalone
-    ----------------------------------------------------
-
     GTA(message)
-
 end
 
---------------------------------------------------------
--- Convenience Functions
---------------------------------------------------------
+local function Success(msg)  Show(msg, "success") end
+local function Error(msg)    Show(msg, "error") end
+local function Warning(msg)  Show(msg, "warning") end
+local function Info(msg)     Show(msg, "inform") end
 
-function Notifications.Success(msg)
-
-    Notifications.Show(msg, "success")
-
+local function Announcement(title, msg)
+    Show(("~b~%s~s~\n%s"):format(title, msg), "inform", 8000)
 end
 
-function Notifications.Error(msg)
-
-    Notifications.Show(msg, "error")
-
-end
-
-function Notifications.Warning(msg)
-
-    Notifications.Show(msg, "warning")
-
-end
-
-function Notifications.Info(msg)
-
-    Notifications.Show(msg, "inform")
-
-end
-
---------------------------------------------------------
--- Announcement
---------------------------------------------------------
-
-function Notifications.Announcement(title, msg)
-
-    Notifications.Show(
-
-        ("~b~%s~s~\n%s"):format(title, msg),
-
-        "inform",
-
-        8000
-
-    )
-
-end
-
---------------------------------------------------------
--- Progress Bar (ox_lib)
---------------------------------------------------------
-
-function Notifications.Progress(label, duration)
-
-    if Provider ~= "ox" then
-        return false
-    end
-
+local function Progress(label, duration)
+    if provider ~= "ox" then return false end
     return lib.progressBar({
-
-        duration = duration,
-
-        label = label,
-
+        duration     = duration,
+        label        = label,
         useWhileDead = false,
-
-        canCancel = false,
-
-        disable = {
-
-            move = true,
-
-            combat = true,
-
-            vehicle = true
-
-        }
-
+        canCancel    = false,
+        disable      = { move = true, combat = true, vehicle = true },
     })
-
 end
 
---------------------------------------------------------
--- Events
---------------------------------------------------------
+RegisterNetEvent("hotel:notify",        function(msg, t, d) Show(msg, t, d) end)
+RegisterNetEvent("hotel:notifySuccess", function(msg) Success(msg) end)
+RegisterNetEvent("hotel:notifyError",   function(msg) Error(msg) end)
+RegisterNetEvent("hotel:notifyWarning", function(msg) Warning(msg) end)
+RegisterNetEvent("hotel:announcement",  function(title, msg) Announcement(title, msg) end)
 
-RegisterNetEvent("hotel:notify", function(msg)
+exports("Notify",        Show)
+exports("Success",       Success)
+exports("Error",         Error)
+exports("Warning",       Warning)
+exports("Info",          Info)
+exports("Announcement",  Announcement)
+exports("Progress",      Progress)
 
-    Notifications.Info(msg)
-
-end)
-
-RegisterNetEvent("hotel:notifySuccess", function(msg)
-
-    Notifications.Success(msg)
-
-end)
-
-RegisterNetEvent("hotel:notifyError", function(msg)
-
-    Notifications.Error(msg)
-
-end)
-
-RegisterNetEvent("hotel:notifyWarning", function(msg)
-
-    Notifications.Warning(msg)
-
-end)
-
---------------------------------------------------------
--- Exports
---------------------------------------------------------
-
-exports("Notify", Notifications.Show)
-
-exports("Success", Notifications.Success)
-
-exports("Error", Notifications.Error)
-
-exports("Warning", Notifications.Warning)
-
-exports("Info", Notifications.Info)
-
-exports("Announcement", Notifications.Announcement)
-
-exports("Progress", Notifications.Progress)
+return { Show = Show, Success = Success, Error = Error, Warning = Warning, Info = Info, Announcement = Announcement, Progress = Progress }
