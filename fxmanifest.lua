@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'Rob'
-description 'Standalone Modular Hotel Framework'
+description 'Standalone Hotel Script'
 version '1.0.0'
 
 lua54 'yes'
