@@ -110,14 +110,14 @@ Optional integrations are auto-detected at startup. Missing resources don't caus
 ## Exports
 
 ```lua
-exports["ultimate_hotel"]:CreateRental(...)
-exports["ultimate_hotel"]:CancelRental(...)
-exports["ultimate_hotel"]:GiveKey(...)
-exports["ultimate_hotel"]:HasKey(...)
-exports["ultimate_hotel"]:Notify(...)
-exports["ultimate_hotel"]:GetHotel(...)
-exports["ultimate_hotel"]:GetRoom(...)
-exports["ultimate_hotel"]:GetEmployees(...)
+exports["tstudio_hotelscript"]:CreateRental(...)
+exports["tstudio_hotelscript"]:CancelRental(...)
+exports["tstudio_hotelscript"]:GiveKey(...)
+exports["tstudio_hotelscript"]:HasKey(...)
+exports["tstudio_hotelscript"]:Notify(...)
+exports["tstudio_hotelscript"]:GetHotel(...)
+exports["tstudio_hotelscript"]:GetRoom(...)
+exports["tstudio_hotelscript"]:GetEmployees(...)
 ```
 
 > Admin command: `/hotel_reload`
