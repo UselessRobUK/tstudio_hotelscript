@@ -1,13 +1,238 @@
-body {
-    background: transparent;
-    font-family: Arial;
+* {
+    box-sizing: border-box;
+    user-select: none;
 }
 
-#menu {
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", Arial, sans-serif;
+    background: transparent;
+    overflow: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#app {
     position: absolute;
-    top: 20%;
-    left: 40%;
-    background: black;
+    top: 50%;
+    left: 50%;
+    width: 980px;
+    height: 620px;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(145deg, rgba(18, 18, 24, 0.98), rgba(8, 8, 12, 0.98));
+    color: #fff;
+    border-radius: 22px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+}
+
+header {
+    height: 90px;
+    padding: 22px 28px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+header span {
+    color: #aaa;
+    font-size: 13px;
+}
+
+#closeButton {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
     color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#closeButton:hover {
+    background: rgba(255, 80, 80, 0.85);
+}
+
+aside {
+    position: absolute;
+    top: 90px;
+    left: 0;
+    width: 190px;
+    height: calc(100% - 90px);
+    padding: 22px 14px;
+    background: rgba(255, 255, 255, 0.025);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.menu {
+    width: 100%;
+    height: 46px;
+    margin-bottom: 10px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #bbb;
+    font-size: 14px;
+    text-align: left;
+    padding-left: 18px;
+    cursor: pointer;
+}
+
+.menu:hover,
+.menu.active {
+    background: linear-gradient(90deg, #d4af37, #9c7c20);
+    color: #111;
+    font-weight: 700;
+}
+
+main {
+    position: absolute;
+    top: 90px;
+    left: 190px;
+    width: calc(100% - 190px);
+    height: calc(100% - 90px);
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+.toolbar {
+    margin-bottom: 18px;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    color: white;
+    border-radius: 12px;
+    padding: 13px 15px;
+    outline: none;
+    font-family: inherit;
+}
+
+textarea {
+    height: 180px;
+    resize: none;
+}
+
+#roomGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.room-card {
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 18px;
     padding: 20px;
+}
+
+.room-card h3 {
+    margin: 0 0 8px;
+}
+
+.room-card p {
+    margin: 4px 0;
+    color: #aaa;
+}
+
+.room-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button.action {
+    flex: 1;
+    border: 0;
+    border-radius: 12px;
+    padding: 12px;
+    background: #d4af37;
+    color: #111;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+button.danger {
+    background: #d94f4f;
+    color: white;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.055);
+    border-radius: 18px;
+    padding: 20px;
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.card span {
+    color: #aaa;
+    font-size: 13px;
+}
+
+#submitComplaint {
+    margin-top: 14px;
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    padding: 14px;
+    background: #d4af37;
+    color: #111;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.list-item {
+    background: rgba(255, 255, 255, 0.055);
+    border-radius: 14px;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.75);
+    border-radius: 20px;
 }
