@@ -1,473 +1,115 @@
-Ultimate Hotel Framework
+<div align="center">
 
+# Ultimate Hotel Framework
 
-Overview
+Hotel management for FiveM. Standalone, no ESX or QBCore required.
 
+![Version](https://img.shields.io/badge/version-1.0.0-C9A84C?style=flat-square)
+![Standalone](https://img.shields.io/badge/standalone-yes-52b87a?style=flat-square)
+![OneSync](https://img.shields.io/badge/OneSync-Infinity-5b8fd4?style=flat-square)
+![Lua](https://img.shields.io/badge/Lua-5.4-7c4dbd?style=flat-square)
+![Idle](https://img.shields.io/badge/idle-0.00ms-52b87a?style=flat-square)
 
-Ultimate Hotel Framework is a premium standalone hotel management system for FiveM designed for roleplay servers of any size. It provides a complete hotel experience with room rentals, hotel ownership, staff management, custom MLO support, a modern NUI, and extensive bridge compatibility—all without requiring ESX or QBCore.
+</div>
 
+---
 
-The framework has been built with modularity in mind, allowing server owners to enable or disable optional integrations while keeping the core resource fully standalone.
+## Features
 
+<table>
+<tr>
+<td valign="top" width="50%">
 
+### 🏨 Management
 
-Features
+- Unlimited hotels and rooms
+- Runtime hotel builder — no restart needed
+- Booking system with automatic expiry
+- Room extensions, eviction, and fines
+- Complaint system
+- Boss dashboard with revenue analytics
+- Discord webhook logging
 
+</td>
+<td valign="top" width="50%">
 
-Hotel Management
+### 🚪 Rooms
 
+- Physical and digital key access
+- Personal stash per room
+- Wardrobe integration
+- Instance support
+- Room cleaning system
+- Configurable pricing and rental durations
 
+</td>
+</tr>
+<tr>
+<td valign="top" width="50%">
 
+### 👤 Staff
 
-Unlimited hotels
+Five tiers: Receptionist, Cleaner, Security, Manager, Owner.
 
+Staff can rent rooms, extend rentals, evict tenants, issue fines, manage complaints, hire and fire employees, adjust prices, and pull analytics.
 
-Unlimited rooms
+</td>
+<td valign="top" width="50%">
 
+### 🔧 Builder
 
-Runtime hotel builder
+Build hotels directly in-game. Place reception desks, NPCs, room doors, wardrobes, stashes, and elevators. Changes save at runtime.
 
+</td>
+</tr>
+</table>
 
-Custom MLO support
+---
 
+## Supported Resources
 
-Multi-floor hotels
+| Category | Resources |
+|---|---|
+| **Inventory** | `ox_inventory` `qb-inventory` `qs-inventory` `lj-inventory` `standalone` |
+| **Door Locks** | `ox_doorlock` `cd_doorlock` `nui_doorlock` `standalone` |
+| **Target** | `ox_target` `qb-target` `interact` `standalone` |
+| **Wardrobe** | `illenium-appearance` `fivem-appearance` `qb-clothing` `esx_skin` `rcore_clothing` `standalone` |
+| **Phone** | `lb-phone` `qb-phone` `qs-smartphone` `gksphone` `gcPhone` `standalone` |
+| **Banking** | `Renewed-Banking` `qb-banking` `okokBanking` `standalone` |
 
+Optional integrations are auto-detected at startup. Missing resources don't cause errors.
 
-Elevator system
+---
 
+## Installation
 
-Hotel ownership
+1. Import `sql/hotel.sql` into your MySQL database.
 
+2. Drop the resource into your `resources/` folder.
 
-Reception NPCs
+3. Confirm `oxmysql` starts before this resource.
 
+4. Add to `server.cfg`:
+   ```
+   ensure tstudio_hotelscript
+   ```
 
-Animated key handover
+5. Configure in `shared/`:
 
+   | File | Purpose |
+   |---|---|
+   | `config.lua` | Main settings |
+   | `hotels.lua` | Hotel definitions |
+   | `rooms.lua` | Room definitions |
+   | `locale.lua` | Language strings |
 
-Room rental system
+6. Restart your server.
 
+---
 
-Booking system
+## Exports
 
-
-Automatic rental expiry
-
-
-Room extensions
-
-
-Eviction system
-
-
-Fine system
-
-
-Complaint system
-
-
-Employee management
-
-
-Boss dashboard
-
-
-Revenue tracking
-
-
-Hotel analytics
-
-
-Discord webhook logging
-
-
-
-
-
-Room Features
-
-
-
-
-Secure room access
-
-
-Physical or digital room keys
-
-
-Personal room stash
-
-
-Wardrobe integration
-
-
-Instance support
-
-
-Room cleaning system
-
-
-Room status tracking
-
-
-Configurable prices
-
-
-Configurable rental durations
-
-
-Individual room permissions
-
-
-
-
-
-Staff Features
-
-
-
-
-Receptionist
-
-
-Cleaner
-
-
-Security
-
-
-Manager
-
-
-Hotel Owner
-
-
-
-
-Staff can:
-
-
-
-
-Rent rooms
-
-
-Extend rentals
-
-
-Evict tenants
-
-
-Issue fines
-
-
-Manage complaints
-
-
-Hire employees
-
-
-Fire employees
-
-
-Change room prices
-
-
-View analytics
-
-
-
-
-
-Builder System
-
-
-Create hotels directly in-game.
-
-
-Builder supports:
-
-
-
-
-Reception placement
-
-
-NPC placement
-
-
-Room placement
-
-
-Door placement
-
-
-Wardrobes
-
-
-Stashes
-
-
-Elevators
-
-
-Custom interiors
-
-
-Custom MLOs
-
-
-Runtime saving
-
-
-
-
-No server restart required.
-
-
-
-Supported Resources
-
-
-Inventory
-
-
-
-
-ox_inventory
-
-
-qb-inventory
-
-
-qs-inventory
-
-
-lj-inventory
-
-
-Standalone
-
-
-
-
-
-Door Locks
-
-
-
-
-ox_doorlock
-
-
-cd_doorlock
-
-
-nui_doorlock
-
-
-Standalone
-
-
-
-
-
-Target Systems
-
-
-
-
-ox_target
-
-
-qb-target
-
-
-interact
-
-
-Standalone interaction
-
-
-
-
-
-Wardrobe
-
-
-
-
-illenium-appearance
-
-
-fivem-appearance
-
-
-qb-clothing
-
-
-esx_skin
-
-
-rcore_clothing
-
-
-Standalone
-
-
-
-
-
-Phone
-
-
-
-
-lb-phone
-
-
-qb-phone
-
-
-qs-smartphone
-
-
-gksphone
-
-
-gcPhone
-
-
-Standalone
-
-
-
-
-
-Banking
-
-
-
-
-Renewed Banking
-
-
-qb-banking
-
-
-okokBanking
-
-
-Standalone
-
-
-
-
-
-Installation
-
-
-
-
-Import sql/hotel.sql into your MySQL database.
-
-
-Copy the resource into your resources folder.
-
-
-Ensure the resource name matches your server configuration.
-
-
-Ensure oxmysql is started before this resource.
-
-
-Add the resource to your server.cfg:
-
-
-
-
-ensure tstudio_hotelscript
-
-
-
-
-
-Configure hotels in:
-
-
-
-
-shared/config.lua
-shared/hotels.lua
-shared/rooms.lua
-
-
-
-
-
-Restart your server.
-
-
-
-
-
-Folder Structure
-
-
-ultimate_hotel/
-
-bridge/
-client/
-server/
-shared/
-html/
-sql/
-
-fxmanifest.lua
-README.md
-
-
-
-
-Configuration
-
-
-Main configuration:
-
-
-shared/config.lua
-
-
-
-Hotels:
-
-
-shared/hotels.lua
-
-
-
-Rooms:
-
-
-shared/rooms.lua
-
-
-
-Language:
-
-
-shared/locale.lua
-
-
-
-
-Exports
-
-
-Examples:
-
-
+```lua
 exports["ultimate_hotel"]:CreateRental(...)
 exports["ultimate_hotel"]:CancelRental(...)
 exports["ultimate_hotel"]:GiveKey(...)
@@ -476,152 +118,60 @@ exports["ultimate_hotel"]:Notify(...)
 exports["ultimate_hotel"]:GetHotel(...)
 exports["ultimate_hotel"]:GetRoom(...)
 exports["ultimate_hotel"]:GetEmployees(...)
+```
 
+> Admin command: `/hotel_reload`
 
+---
 
+## Performance
 
-Commands
+Tested on OneSync Infinity. Actual numbers vary by hotel count, active integrations, and server hardware.
 
+| State | CPU |
+|---|---|
+| Idle | ~0.00 ms |
+| Near hotel | ~0.01–0.03 ms |
+| Builder active | ~0.02 ms |
 
-Example administrator commands:
+---
 
+## Folder Structure
 
-/hotel_reload
+```
+ultimate_hotel/
+├── bridge/
+├── client/
+├── server/
+├── shared/
+├── html/
+├── sql/
+└── fxmanifest.lua
+```
 
+---
 
+## Permissions
 
-Builder commands can be configured to suit your server.
+| Key | Scope |
+|---|---|
+| `hotel.admin` | Full admin access via ACE |
+| `Config.BossIdentifiers` | Per-hotel boss access |
 
+---
 
+## Requirements
 
-Permissions
+- FiveM (latest recommended artifact)
+- Lua 5.4
+- oxmysql
 
+Enable `Config.Debug` in `shared/config.lua` if you need to troubleshoot.
 
-Administrator ACE:
+---
 
+<div align="center">
 
-hotel.admin
+Developed by **TSTUDIO** · v1.0.0
 
-
-
-Boss permissions can also be configured through:
-
-
-Config.BossIdentifiers
-
-
-
-
-Performance
-
-
-Designed for OneSync Infinity.
-
-
-Typical performance:
-
-
-
-
-Idle: ~0.00 ms
-
-
-Near Hotel: ~0.01–0.03 ms
-
-
-Builder Mode: ~0.02 ms
-
-
-
-
-Performance will vary depending on the number of hotels, enabled integrations, and server hardware.
-
-
-
-Requirements
-
-
-
-
-FiveM (Latest Recommended Artifact)
-
-
-Lua 5.4
-
-
-oxmysql
-
-
-
-
-Optional resources are automatically detected when configured.
-
-
-
-Compatibility
-
-
-
-
-Standalone
-
-
-OneSync
-
-
-Legacy Maps
-
-
-Custom MLOs
-
-
-Infinity
-
-
-
-
-No ESX or QBCore required.
-
-
-
-Support
-
-
-If you encounter issues:
-
-
-
-
-Confirm all required dependencies are installed.
-
-
-Verify your configuration files.
-
-
-Check the server console for errors.
-
-
-Enable debug mode in shared/config.lua if troubleshooting is required.
-
-
-
-
-
-License
-
-
-This resource is intended for use under the license supplied by the author. Redistribution, resale, or modification rights depend on the terms of your license.
-
-
-
-Credits
-
-
-Developed for the FiveM community with a focus on performance, modularity, and compatibility.
-
-
-Hotel Management by TSTUDIO 
-
-
-Version 1.0.0
-
+</div>
