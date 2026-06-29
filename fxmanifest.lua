@@ -1,0 +1,30 @@
+fx_version 'cerulean'
+game 'gta5'
+
+author 'Hotel System'
+description 'Standalone Modular Hotel Framework'
+version '2.0.0'
+
+lua54 'yes'
+
+shared_scripts {
+    'config.lua',
+    'shared/*.lua'
+}
+
+client_scripts {
+    'client/*.lua'
+}
+
+server_scripts {
+    '@oxmysql/lib/MySQL.lua',
+    'server/*.lua'
+}
+
+ui_page 'html/index.html'
+
+files {
+    'html/index.html',
+    'html/style.css',
+    'html/app.js'
+}
