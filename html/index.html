@@ -1,15 +1,269 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Hotel Management</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
 </head>
+
 <body>
 
-<div id="menu">
-    <h1>Hotel</h1>
-    <div id="rooms"></div>
+<div id="app" class="hidden">
+
+    <!--=============================================-->
+    <!-- Header -->
+    <!--=============================================-->
+
+    <header>
+
+        <div>
+
+            <h1 id="hotelName">
+                Hotel
+            </h1>
+
+            <span id="hotelSubtitle">
+                Premium Accommodation
+            </span>
+
+        </div>
+
+        <button id="closeButton">
+            ✕
+        </button>
+
+    </header>
+
+    <!--=============================================-->
+    <!-- Sidebar -->
+    <!--=============================================-->
+
+    <aside>
+
+        <button class="menu active"
+            data-page="rooms">
+
+            Rooms
+
+        </button>
+
+        <button class="menu"
+            data-page="bookings">
+
+            Bookings
+
+        </button>
+
+        <button class="menu"
+            data-page="complaints">
+
+            Complaints
+
+        </button>
+
+        <button class="menu"
+            data-page="boss">
+
+            Management
+
+        </button>
+
+        <button class="menu"
+            data-page="settings">
+
+            Settings
+
+        </button>
+
+    </aside>
+
+    <!--=============================================-->
+    <!-- Content -->
+    <!--=============================================-->
+
+    <main>
+
+        <!--=============================-->
+        <!-- Rooms -->
+        <!--=============================-->
+
+        <section
+            id="rooms"
+            class="page active">
+
+            <div class="toolbar">
+
+                <input
+                    id="roomSearch"
+                    type="text"
+                    placeholder="Search room">
+
+            </div>
+
+            <div id="roomGrid">
+
+            </div>
+
+        </section>
+
+        <!--=============================-->
+        <!-- Bookings -->
+        <!--=============================-->
+
+        <section
+            id="bookings"
+            class="page">
+
+            <div id="bookingList">
+
+            </div>
+
+        </section>
+
+        <!--=============================-->
+        <!-- Complaints -->
+        <!--=============================-->
+
+        <section
+            id="complaints"
+            class="page">
+
+            <textarea
+                id="complaintText"
+                placeholder="Describe your issue...">
+
+            </textarea>
+
+            <button id="submitComplaint">
+
+                Submit Complaint
+
+            </button>
+
+        </section>
+
+        <!--=============================-->
+        <!-- Boss -->
+        <!--=============================-->
+
+        <section
+            id="boss"
+            class="page">
+
+            <div class="stats">
+
+                <div class="card">
+
+                    <h2 id="revenue">
+                        £0
+                    </h2>
+
+                    <span>
+                        Revenue
+                    </span>
+
+                </div>
+
+                <div class="card">
+
+                    <h2 id="occupiedRooms">
+                        0
+                    </h2>
+
+                    <span>
+                        Occupied
+                    </span>
+
+                </div>
+
+                <div class="card">
+
+                    <h2 id="complaintCount">
+                        0
+                    </h2>
+
+                    <span>
+                        Complaints
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div id="bossContent">
+
+            </div>
+
+        </section>
+
+        <!--=============================-->
+        <!-- Settings -->
+        <!--=============================-->
+
+        <section
+            id="settings"
+            class="page">
+
+            <h2>
+
+                Hotel Settings
+
+            </h2>
+
+            <div class="setting">
+
+                <label>
+
+                    Payment Method
+
+                </label>
+
+                <select id="paymentMethod">
+
+                    <option value="cash">
+
+                        Cash
+
+                    </option>
+
+                    <option value="bank">
+
+                        Bank
+
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
+
+    </main>
+
 </div>
 
 <script src="app.js"></script>
+
 </body>
 </html>
