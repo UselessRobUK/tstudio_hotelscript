@@ -1,6 +1,6 @@
 <div align="center">
 
-# Ultimate Hotel Framework
+# TSTUDIO HOTEL MANAGEMENT
 
 Hotel management for FiveM. Standalone, no ESX or QBCore required.
 
