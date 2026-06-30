@@ -157,19 +157,5 @@ RegisterCommand("hotel_boss", function(_, args)
     OpenBossMenu(hotelId)
 end)
 
-CreateThread(function()
-    while true do
-        if Boss.open then
-            Wait(0)
-
-            if IsControlJustPressed(0, 322) then
-                CloseBossMenu()
-            end
-        else
-            Wait(1000)
-        end
-    end
-end)
-
 exports("OpenHotelBossMenu", OpenBossMenu)
 exports("CloseHotelBossMenu", CloseBossMenu)

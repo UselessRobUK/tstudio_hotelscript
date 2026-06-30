@@ -44,29 +44,39 @@ CreateThread(function()
 end)
 
 if not UsingOxTarget then
-    CreateThread(function()
-        while true do
-            local sleep   = 1000
-            local ped     = PlayerPedId()
-            local coords  = GetEntityCoords(ped)
+    local npcKey
+    local npcAction
 
-            for hotelId, npc in pairs(NPCs) do
-                if DoesEntityExist(npc) then
-                    local npcCoords = GetEntityCoords(npc)
-                    local dist      = #(coords - npcCoords)
-                    if dist < 8.0 then
-                        sleep = 0
-                        Utils.DrawText3D(vector3(npcCoords.x, npcCoords.y, npcCoords.z + 1.05), "[E] Speak to Reception")
-                        if dist < 2.0 and IsControlJustReleased(0, Config.InteractKey) then
-                            TriggerEvent("hotel:openMenu", hotelId)
-                        end
-                    end
-                end
-            end
+    npcKey = lib.addKeybind({
+        name        = 'hotel_npc_interact',
+        description = 'Speak to Reception',
+        defaultKey  = 'e',
+        disabled    = true,
+        onPressed   = function()
+            if npcAction then npcAction() end
+        end,
+    })
 
-            Wait(sleep)
+    for _, hotel in pairs(Hotels) do
+        if hotel.npc then
+            local c = hotel.npc.coords
+            lib.zones.sphere({
+                coords  = vec3(c.x, c.y, c.z),
+                radius  = 2.0,
+                debug   = Config.Debug,
+                onEnter = function()
+                    npcAction = function() TriggerEvent("hotel:openMenu", hotel.id) end
+                    lib.showTextUI("[E] Speak to Reception", { position = 'right-center' })
+                    npcKey:enable()
+                end,
+                onExit  = function()
+                    npcAction = nil
+                    lib.hideTextUI()
+                    npcKey:disable()
+                end,
+            })
         end
-    end)
+    end
 end
 
 RegisterNetEvent("hotel:npcGreeting", function(hotelId)

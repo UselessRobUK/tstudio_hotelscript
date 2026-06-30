@@ -6,7 +6,7 @@ return {
     InteractKey = 38,
 
     DefaultPayment = "cash",
-
+    UseTarget = true,
     Currency = "£",
 
     UsePhysicalKeys = false,

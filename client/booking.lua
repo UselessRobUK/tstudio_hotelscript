@@ -111,19 +111,5 @@ RegisterCommand("hotel_book", function(_, args)
     OpenBooking(hotelId)
 end)
 
-CreateThread(function()
-    while true do
-        if Booking.open then
-            Wait(0)
-
-            if IsControlJustPressed(0, 322) then
-                CloseBooking()
-            end
-        else
-            Wait(1000)
-        end
-    end
-end)
-
 exports("OpenHotelBooking", OpenBooking)
 exports("CloseHotelBooking", CloseBooking)

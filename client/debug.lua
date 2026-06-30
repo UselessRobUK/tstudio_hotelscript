@@ -40,107 +40,8 @@ local function Draw3D(coords, text)
 
 end
 
-CreateThread(function()
-    while true do
-        if not drawMarkers then
-            Wait(1000)
-        else
-            Wait(0)
-
-            for _, hotel in pairs(Hotels) do
-
-                if hotel.entrance then
-
-                    DrawMarker(
-                        1,
-                        hotel.entrance.x,
-                        hotel.entrance.y,
-                        hotel.entrance.z - 1.0,
-                        0.0,0.0,0.0,
-                        0.0,0.0,0.0,
-                        1.0,1.0,1.0,
-                        0,255,0,120,
-                        false,true,2
-                    )
-
-                end
-
-                if hotel.rooms then
-
-                    for _, room in pairs(hotel.rooms) do
-
-                        if room.entrance then
-
-                            local pos = room.entrance.coords or room.entrance
-
-                            DrawMarker(
-                                2,
-                                pos.x,
-                                pos.y,
-                                pos.z,
-                                0.0,0.0,0.0,
-                                0.0,0.0,0.0,
-                                0.35,0.35,0.35,
-                                255,255,0,150,
-                                false,true,2
-                            )
-
-                            if drawRoomIds then
-
-                                Draw3D(
-                                    vector3(
-                                        pos.x,
-                                        pos.y,
-                                        pos.z + 0.5
-                                    ),
-                                    tostring(room.id)
-                                )
-
-                            end
-
-                        end
-
-                    end
-
-                end
-
-            end
-
-        end
-
-    end
-
-end)
-
-CreateThread(function()
-    while true do
-        if not drawNPCs then
-            Wait(1000)
-        else
-            Wait(0)
-
-            for _, hotel in pairs(Hotels) do
-
-                if hotel.npc then
-
-                    Draw3D(
-                        vector3(
-                            hotel.npc.coords.x,
-                            hotel.npc.coords.y,
-                            hotel.npc.coords.z + 1.2
-                        ),
-                        hotel.name
-                    )
-
-                end
-
-            end
-
-        end
-
-    end
-
-end)
+local markersActive = false
+local npcsActive    = false
 
 RegisterCommand("hotel_debug", function()
     enabled = not enabled
@@ -150,6 +51,37 @@ end)
 RegisterCommand("hotel_markers", function()
     drawMarkers = not drawMarkers
     print("Hotel Markers:", drawMarkers)
+    if drawMarkers and not markersActive then
+        markersActive = true
+        CreateThread(function()
+            while drawMarkers do
+                Wait(0)
+                for _, hotel in pairs(Hotels) do
+                    if hotel.entrance then
+                        DrawMarker(1,
+                            hotel.entrance.x, hotel.entrance.y, hotel.entrance.z - 1.0,
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+                            0, 255, 0, 120, false, true, 2)
+                    end
+                    if hotel.rooms then
+                        for _, room in pairs(hotel.rooms) do
+                            if room.entrance then
+                                local pos = room.entrance.coords or room.entrance
+                                DrawMarker(2,
+                                    pos.x, pos.y, pos.z,
+                                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.35, 0.35, 0.35,
+                                    255, 255, 0, 150, false, true, 2)
+                                if drawRoomIds then
+                                    Draw3D(vector3(pos.x, pos.y, pos.z + 0.5), tostring(room.id))
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            markersActive = false
+        end)
+    end
 end)
 
 RegisterCommand("hotel_rooms", function()
@@ -160,6 +92,23 @@ end)
 RegisterCommand("hotel_npcs", function()
     drawNPCs = not drawNPCs
     print("NPC Labels:", drawNPCs)
+    if drawNPCs and not npcsActive then
+        npcsActive = true
+        CreateThread(function()
+            while drawNPCs do
+                Wait(0)
+                for _, hotel in pairs(Hotels) do
+                    if hotel.npc then
+                        Draw3D(
+                            vector3(hotel.npc.coords.x, hotel.npc.coords.y, hotel.npc.coords.z + 1.2),
+                            hotel.name
+                        )
+                    end
+                end
+            end
+            npcsActive = false
+        end)
+    end
 end)
 
 RegisterCommand("hotel_dump", function()

@@ -91,19 +91,5 @@ RegisterCommand("hotel_complain", function(_, args)
     OpenComplaintMenu(hotelId)
 end)
 
-CreateThread(function()
-    while true do
-        if Complaints.open then
-            Wait(0)
-
-            if IsControlJustPressed(0, 322) then
-                CloseComplaintMenu()
-            end
-        else
-            Wait(1000)
-        end
-    end
-end)
-
 exports("OpenComplaintMenu", OpenComplaintMenu)
 exports("CloseComplaintMenu", CloseComplaintMenu)

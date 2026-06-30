@@ -142,20 +142,6 @@ RegisterCommand("hotel_boss", function(_, args)
     TriggerEvent("hotel:openBossMenu", hotelId)
 end)
 
-CreateThread(function()
-    while true do
-        if NuiOpen then
-            Wait(0)
-
-            if IsControlJustPressed(0, 322) then -- ESC
-                CloseUI()
-            end
-        else
-            Wait(1000)
-        end
-    end
-end)
-
 exports("OpenHotelUI", function(hotelId)
     TriggerEvent("hotel:openMenu", hotelId)
 end)

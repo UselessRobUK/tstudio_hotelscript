@@ -64,12 +64,61 @@ local function AddRoom()
     Notify("Room created.")
 end
 
+local builderActive = false
+
 RegisterCommand("hotelbuilder", function()
-
     Builder.enabled = not Builder.enabled
-
     Notify("Hotel Builder: "..tostring(Builder.enabled))
+    if Builder.enabled and not builderActive then
+        builderActive = true
+        CreateThread(function()
+            while Builder.enabled do
+                Wait(0)
 
+                local ped    = PlayerPedId()
+                local coords = GetEntityCoords(ped)
+
+                Draw3D(coords.x, coords.y, coords.z + 1.0, [[HOTEL BUILDER
+
+/ hotel_setname
+/ hotel_setid
+/ hotel_entrance
+/ hotel_reception
+/ hotel_addroom
+/ hotel_roomstash
+/ hotel_roomwardrobe
+/ hotel_roomexit
+/ hotel_roomprice
+/ hotel_save
+]])
+
+                if Builder.hotel.entrance then
+                    DrawMarker(1,
+                        Builder.hotel.entrance.coords.x,
+                        Builder.hotel.entrance.coords.y,
+                        Builder.hotel.entrance.coords.z - 1.0,
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+                        0, 255, 0, 150, false, true, 2)
+                end
+
+                for _, room in ipairs(Builder.hotel.rooms) do
+                    DrawMarker(2,
+                        room.entrance.coords.x,
+                        room.entrance.coords.y,
+                        room.entrance.coords.z,
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5,
+                        255, 255, 0, 180, false, true, 2)
+                    Draw3D(
+                        room.entrance.coords.x,
+                        room.entrance.coords.y,
+                        room.entrance.coords.z + 0.5,
+                        room.label
+                    )
+                end
+            end
+            builderActive = false
+        end)
+    end
 end)
 
 RegisterCommand("hotel_setname", function(_, args)
@@ -192,89 +241,3 @@ RegisterCommand("hotel_clear", function()
 
 end)
 
-CreateThread(function()
-
-    while true do
-
-        if not Builder.enabled then
-
-            Wait(1000)
-
-        else
-
-            Wait(0)
-
-            local ped = PlayerPedId()
-
-            local coords = GetEntityCoords(ped)
-
-            Draw3D(coords.x, coords.y, coords.z + 1.0,
-
-[[HOTEL BUILDER
-
-/ hotel_setname
-
-/ hotel_setid
-
-/ hotel_entrance
-
-/ hotel_reception
-
-/ hotel_addroom
-
-/ hotel_roomstash
-
-/ hotel_roomwardrobe
-
-/ hotel_roomexit
-
-/ hotel_roomprice
-
-/ hotel_save
-
-]])
-
-            if Builder.hotel.entrance then
-
-                DrawMarker(
-                    1,
-                    Builder.hotel.entrance.coords.x,
-                    Builder.hotel.entrance.coords.y,
-                    Builder.hotel.entrance.coords.z - 1.0,
-                    0.0,0.0,0.0,
-                    0.0,0.0,0.0,
-                    1.0,1.0,1.0,
-                    0,255,0,150,
-                    false,true,2
-                )
-
-            end
-
-            for i, room in ipairs(Builder.hotel.rooms) do
-
-                DrawMarker(
-                    2,
-                    room.entrance.coords.x,
-                    room.entrance.coords.y,
-                    room.entrance.coords.z,
-                    0.0,0.0,0.0,
-                    0.0,0.0,0.0,
-                    0.5,0.5,0.5,
-                    255,255,0,180,
-                    false,true,2
-                )
-
-                Draw3D(
-                    room.entrance.coords.x,
-                    room.entrance.coords.y,
-                    room.entrance.coords.z + 0.5,
-                    room.label
-                )
-
-            end
-
-        end
-
-    end
-
-end)
