@@ -7,12 +7,12 @@ local UsingOxTarget = GetResourceState("ox_target") == "started"
 
 local function SpawnReception(hotel)
     if NPCs[hotel.id] then return end
-    if not hotel.npc then return end
+    if not hotel.reception then return end
 
-    local hash = Utils.LoadModel(hotel.npc.model)
+    local hash = Utils.LoadModel(hotel.reception.model)
     if not hash then return end
 
-    local c   = hotel.npc.coords
+    local c   = hotel.reception.coords
     local ped = CreatePed(4, hash, c.x, c.y, c.z - 1.0, c.w, false, true)
 
     SetEntityInvincible(ped, true)
@@ -58,8 +58,8 @@ if not UsingOxTarget then
     })
 
     for _, hotel in pairs(Hotels) do
-        if hotel.npc then
-            local c = hotel.npc.coords
+        if hotel.reception then
+            local c = hotel.reception.coords
             lib.zones.sphere({
                 coords  = vec3(c.x, c.y, c.z),
                 radius  = 2.0,

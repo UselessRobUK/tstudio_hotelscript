@@ -28,6 +28,11 @@ exports("GetActiveRental",function(src)                           return Rentals
 exports("GiveKey",   function(src, hotelId, roomId, expires) return Keys().Give(src, hotelId, tonumber(roomId), expires) end)
 exports("RemoveKey", function(src, hotelId, roomId)          return Keys().Remove(src, hotelId, tonumber(roomId)) end)
 exports("HasKey",    function(src, hotelId, roomId)          return Keys().Has(Main().GetIdentifier(src), hotelId, tonumber(roomId)) end)
+exports("HasRoomAccess", function(src, hotelId, roomId)
+    local identifier = Main().GetIdentifier(src)
+    if not identifier then return false end
+    return Keys().Has(identifier, hotelId, tonumber(roomId))
+end)
 
 exports("CreateInstance", function(src, hotelId, roomId) return Instances().Create(src, hotelId, tonumber(roomId)) end)
 exports("JoinInstance",   function(src, instanceId)      return Instances().Join(src, instanceId) end)

@@ -57,9 +57,9 @@ RegisterCommand("hotel_markers", function()
             while drawMarkers do
                 Wait(0)
                 for _, hotel in pairs(Hotels) do
-                    if hotel.entrance then
+                    if hotel.reception then
                         DrawMarker(1,
-                            hotel.entrance.x, hotel.entrance.y, hotel.entrance.z - 1.0,
+                            hotel.reception.coords.x, hotel.reception.coords.y, hotel.reception.coords.z - 1.0,
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
                             0, 255, 0, 120, false, true, 2)
                     end
@@ -98,9 +98,9 @@ RegisterCommand("hotel_npcs", function()
             while drawNPCs do
                 Wait(0)
                 for _, hotel in pairs(Hotels) do
-                    if hotel.npc then
+                    if hotel.reception then
                         Draw3D(
-                            vector3(hotel.npc.coords.x, hotel.npc.coords.y, hotel.npc.coords.z + 1.2),
+                            vector3(hotel.reception.coords.x, hotel.reception.coords.y, hotel.reception.coords.z + 1.2),
                             hotel.name
                         )
                     end

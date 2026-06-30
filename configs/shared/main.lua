@@ -11,6 +11,7 @@ return {
 
     UsePhysicalKeys = false,
     KeyItem = "hotel_key",
+    CashItem = "money",
 
     StashSlots = 30,
     StashWeight = 50000,
@@ -29,6 +30,7 @@ return {
 
     BossIdentifiers = {
         -- ["license:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"] = true,
+        ['license:f27362a27435e8ac090e81d4e2879382aed838b9'] = true, -- peak
     },
 
     OptionalResources = {

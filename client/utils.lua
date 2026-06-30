@@ -104,7 +104,7 @@ local function GetClosestHotel(maxDistance)
     local closest = nil
     local closestDist = maxDistance or 999999.0
     for _, hotel in pairs(Hotels) do
-        local point = hotel.entrance or (hotel.npc and hotel.npc.coords)
+        local point = hotel.reception and hotel.reception.coords
         if point then
             local dist = Distance(coords, point)
             if dist < closestDist then

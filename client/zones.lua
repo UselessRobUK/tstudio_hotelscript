@@ -1,5 +1,7 @@
 local Config = require "configs.shared.main"
 local Hotels = require "configs.shared.hotels"
+local Rooms  = require "configs.shared.rooms"
+require "bridge.doorlock"
 
 local Zones = {
     active        = {},
@@ -11,30 +13,27 @@ local Zones = {
 local Target    = Config.UseTarget and require "bridge.target" or nil
 local useTarget = Target and Target.type ~= "standalone"
 
-local interactKey
-if not useTarget then
-    interactKey = lib.addKeybind({
-        name        = 'hotel_interact',
-        description = 'Hotel Interact',
-        defaultKey  = 'e',
-        disabled    = true,
-        onPressed   = function()
-            if Zones.pendingAction then Zones.pendingAction() end
-        end,
-    })
-end
+local interactKey = lib.addKeybind({
+    name        = 'hotel_interact',
+    description = 'Hotel Interact',
+    defaultKey  = 'e',
+    disabled    = true,
+    onPressed   = function()
+        if Zones.pendingAction then Zones.pendingAction() end
+    end,
+})
 
 local function enterZone(label, action, stateEnter)
     if stateEnter then stateEnter() end
     Zones.pendingAction = action
     lib.showTextUI(label, { position = 'right-center' })
-    interactKey:enable()
+    interactKey:disable(false)
 end
 
 local function exitZone()
     Zones.pendingAction = nil
     lib.hideTextUI()
-    interactKey:disable()
+    interactKey:disable(true)
 end
 
 ---@param id      string
@@ -74,17 +73,26 @@ local function registerZone(id, coords, radius, size, label, icon, action, state
     })
 end
 
+---Always uses the [E] keybind prompt, regardless of Config.UseTarget.
+---@param id      string
+---@param coords  vector3
+---@param radius  number
+---@param label   string   display text, without [E] prefix
+---@param action  fun()
+---@param stateEnter? fun()
+local function registerKeybindZone(id, coords, radius, label, action, stateEnter)
+    lib.zones.sphere({
+        coords  = coords,
+        radius  = radius,
+        debug   = Config.Debug,
+        onEnter = function()
+            enterZone(("[E] %s"):format(label), action, stateEnter)
+        end,
+        onExit  = exitZone,
+    })
+end
+
 for _, hotel in pairs(Hotels) do
-    if hotel.entrance then
-        registerZone(
-            "hotel_entrance_" .. hotel.id,
-            vec3(hotel.entrance.x, hotel.entrance.y, hotel.entrance.z),
-            2.0, vec3(1.5, 1.5, 2.0),
-            "Open Hotel", "fas fa-hotel",
-            function() TriggerEvent("hotel:openMenu", hotel.id) end,
-            function() Zones.currentHotel = hotel.id end
-        )
-    end
 
     if hotel.boss then
         registerZone(
@@ -96,8 +104,20 @@ for _, hotel in pairs(Hotels) do
         )
     end
 
-    if hotel.rooms then
-        for _, room in pairs(hotel.rooms) do
+    local seenIds = {}
+    local roomList = {}
+    for _, room in ipairs(hotel.rooms or {}) do
+        seenIds[tostring(room.id)] = true
+        roomList[#roomList + 1] = room
+    end
+    for _, room in ipairs(Rooms[hotel.id] or {}) do
+        if not seenIds[tostring(room.id)] then
+            roomList[#roomList + 1] = room
+        end
+    end
+
+    if #roomList > 0 then
+        for _, room in ipairs(roomList) do
             if room.entrance then
                 local point = room.entrance.coords or room.entrance
                 registerZone(
@@ -140,6 +160,16 @@ for _, hotel in pairs(Hotels) do
                     1.5, vec3(1.0, 1.0, 1.0),
                     "Exit Room", "fas fa-door-closed",
                     function() TriggerEvent("hotel:exitRoom", hotel.id, room.id) end
+                )
+            end
+
+            if room.door and room.door.coords then
+                registerKeybindZone(
+                    ("hotel_door_%s_%s"):format(hotel.id, room.id),
+                    vec3(room.door.coords.x, room.door.coords.y, room.door.coords.z),
+                    2.0,
+                    "Use Door",
+                    function() TriggerServerEvent("hotel:doorlock:interact", hotel.id, room.id) end
                 )
             end
         end

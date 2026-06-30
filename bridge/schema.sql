@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS hotel_rentals (
     hotel       VARCHAR(100) NOT NULL,
     room        INT NOT NULL,
     expires     INT NOT NULL,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_identifier (identifier),
+    INDEX idx_hotel_room (hotel, room)
 );
 
 CREATE TABLE IF NOT EXISTS hotel_bookings (
@@ -16,7 +18,8 @@ CREATE TABLE IF NOT EXISTS hotel_bookings (
     end_time    INT NOT NULL,
     status      VARCHAR(30) DEFAULT 'active',
     cost        INT DEFAULT 0,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_hotel_room (hotel, room)
 );
 
 CREATE TABLE IF NOT EXISTS hotel_keys (
@@ -47,7 +50,8 @@ CREATE TABLE IF NOT EXISTS hotel_complaints (
     status      VARCHAR(30) DEFAULT 'open',
     created_at  INT NOT NULL,
     resolved_at INT DEFAULT NULL,
-    resolved_by VARCHAR(100) DEFAULT NULL
+    resolved_by VARCHAR(100) DEFAULT NULL,
+    INDEX idx_hotel (hotel)
 );
 
 CREATE TABLE IF NOT EXISTS hotel_room_states (
@@ -88,8 +92,3 @@ CREATE TABLE IF NOT EXISTS hotel_transactions (
     reason     TEXT,
     created_at INT NOT NULL
 );
-
-CREATE INDEX IF NOT EXISTS idx_hotel_rentals_identifier   ON hotel_rentals(identifier);
-CREATE INDEX IF NOT EXISTS idx_hotel_rentals_hotel_room   ON hotel_rentals(hotel, room);
-CREATE INDEX IF NOT EXISTS idx_hotel_bookings_hotel_room  ON hotel_bookings(hotel, room);
-CREATE INDEX IF NOT EXISTS idx_hotel_complaints_hotel     ON hotel_complaints(hotel);

@@ -94,6 +94,29 @@ local function HasItem(src, item, metadata)
 end
 
 ---@param src number
+---@param item string
+---@return number
+local function GetItemCount(src, item)
+    if type == "ox" then
+        return exports.ox_inventory:Search(src, "count", item) or 0
+    end
+
+    if type == "qb" or type == "lj" then
+        local QBCore = exports["qb-core"]:GetCoreObject()
+        local Player = QBCore.Functions.GetPlayer(src)
+        if not Player then return 0 end
+        local itemData = Player.Functions.GetItemByName(item)
+        return itemData and itemData.amount or 0
+    end
+
+    if type == "qs" then
+        return exports["qs-inventory"]:GetItemTotalAmount(src, item) or 0
+    end
+
+    return 0
+end
+
+---@param src number
 ---@param hotelId string
 ---@param roomId number
 ---@param expires number
@@ -125,6 +148,7 @@ return {
     AddItem        = AddItem,
     RemoveItem     = RemoveItem,
     HasItem        = HasItem,
+    GetItemCount   = GetItemCount,
     GiveHotelKey   = GiveHotelKey,
     RemoveHotelKey = RemoveHotelKey,
 }

@@ -1,3 +1,6 @@
+local Config    = require "configs.shared.main"
+local Inventory = require "bridge.inventory"
+
 local type = "standalone"
 
 if GetResourceState("Renewed-Banking") == "started" then
@@ -18,6 +21,10 @@ local function Remove(src, amount, account)
     amount  = tonumber(amount) or 0
     account = account or "bank"
     if amount <= 0 then return false end
+
+    if account == "cash" then
+        return Inventory.RemoveItem(src, Config.CashItem or "money", amount)
+    end
 
     if type == "qb" then
         local QBCore = exports["qb-core"]:GetCoreObject()
@@ -42,6 +49,10 @@ local function Add(src, amount, account)
     account = account or "bank"
     if amount <= 0 then return false end
 
+    if account == "cash" then
+        return Inventory.AddItem(src, Config.CashItem or "money", amount)
+    end
+
     if type == "qb" then
         local QBCore = exports["qb-core"]:GetCoreObject()
         local Player = QBCore.Functions.GetPlayer(src)
@@ -57,6 +68,10 @@ end
 ---@return number
 local function Get(src, account)
     account = account or "bank"
+
+    if account == "cash" then
+        return Inventory.GetItemCount(src, Config.CashItem or "money")
+    end
 
     if type == "qb" then
         local QBCore = exports["qb-core"]:GetCoreObject()

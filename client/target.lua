@@ -53,20 +53,20 @@ end
 --------------------------------------------------
 
 function RegisterHotelNPC(hotel)
-    if not hotel or not hotel.npc then return end
+    if not hotel or not hotel.reception then return end
 
     local zone = {
         name = "hotel_npc_" .. hotel.id,
 
         coords = vector3(
-            hotel.npc.coords.x,
-            hotel.npc.coords.y,
-            hotel.npc.coords.z
+            hotel.reception.coords.x,
+            hotel.reception.coords.y,
+            hotel.reception.coords.z
         ),
 
         size = vec3(1.5, 1.5, 2.0),
 
-        heading = hotel.npc.coords.w,
+        heading = hotel.reception.coords.w,
 
         debug = false,
 

@@ -1,7 +1,9 @@
-local Config = require "configs.shared.main"
-local State  = require "server.state"
+local Config  = require "configs.shared.main"
+local State   = require "server.state"
+local Banking = require "bridge.banking"
 
 local function Main() return require "server.main" end
+local function Keys() return require "server.keys" end
 
 ---@param identifier string
 ---@return table|nil
@@ -35,7 +37,7 @@ local function CreateRental(src, hotelId, roomId, payment)
     if GetActiveRental(identifier) then return false, "You already have an active room" end
 
     local price = tonumber(room.price) or 0
-    if not exports[GetCurrentResourceName()]:RemoveMoney(src, price, payment or "cash") then
+    if not Banking.Remove(src, price, payment or "cash") then
         return false, "Not enough money"
     end
 
@@ -52,7 +54,7 @@ local function CreateRental(src, hotelId, roomId, payment)
 
     State.Revenue[hotelId] = (State.Revenue[hotelId] or 0) + price
 
-    TriggerClientEvent("hotel:receiveKey", src, { hotel = hotelId, room = tonumber(roomId), expires = expires })
+    Keys().Give(src, hotelId, tonumber(roomId), expires)
     TriggerClientEvent("hotel:anim:receiveKey", src)
     Main().Notify(src, "Room rented successfully.", "success")
     return true, rental
@@ -74,7 +76,7 @@ local function CancelRental(src, hotelId, roomId)
                 "DELETE FROM hotel_rentals WHERE identifier = ? AND hotel = ? AND room = ?",
                 { identifier, hotelId, tonumber(roomId) }
             )
-            TriggerClientEvent("hotel:removeKey", src, hotelId, tonumber(roomId))
+            Keys().Remove(src, hotelId, tonumber(roomId))
             Main().Notify(src, "Rental cancelled.", "success")
             return true
         end
@@ -101,7 +103,7 @@ local function ExtendRental(src, hotelId, roomId, hours, payment)
     local pricePerHour = math.ceil((tonumber(room.price) or 0) / (tonumber(room.duration) or 24))
     local cost = pricePerHour * hours
 
-    if not exports[GetCurrentResourceName()]:RemoveMoney(src, cost, payment or "cash") then
+    if not Banking.Remove(src, cost, payment or "cash") then
         return false, "Not enough money"
     end
 
@@ -113,7 +115,7 @@ local function ExtendRental(src, hotelId, roomId, hours, payment)
                 { rental.expires, identifier, hotelId, tonumber(roomId) }
             )
             State.Revenue[hotelId] = (State.Revenue[hotelId] or 0) + cost
-            TriggerClientEvent("hotel:receiveKey", src, { hotel = hotelId, room = tonumber(roomId), expires = rental.expires })
+            Keys().Give(src, hotelId, tonumber(roomId), rental.expires)
             Main().Notify(src, "Rental extended.", "success")
             return true, rental
         end

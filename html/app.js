@@ -40,14 +40,16 @@ function renderRooms(rooms) {
         const card = document.createElement("div");
         card.className = "room-card";
 
+        const floor = Math.floor(room.id / 100);
+
         card.innerHTML = `
             <h3>${room.label || `Room ${room.id}`}</h3>
+            <p class="room-floor">Floor ${floor}</p>
             <p>Price: £${room.price || 0}</p>
             <p>Duration: ${room.duration || 24} hours</p>
 
             <div class="room-actions">
                 <button class="action" data-rent="${room.id}">Rent</button>
-                <button class="action secondary" data-enter="${room.id}">Enter</button>
             </div>
         `;
 
@@ -57,18 +59,11 @@ function renderRooms(rooms) {
 
 document.addEventListener("click", e => {
     const rent = e.target.dataset.rent;
-    const enter = e.target.dataset.enter;
 
     if (rent) {
         post("rentRoom", {
             roomId: Number(rent),
             payment: paymentMethod.value || "cash"
-        });
-    }
-
-    if (enter) {
-        post("enterRoom", {
-            roomId: Number(enter)
         });
     }
 });

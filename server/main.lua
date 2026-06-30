@@ -1,7 +1,8 @@
-local Config = require "configs.shared.main"
-local Hotels = require "configs.shared.hotels"
-local Rooms  = require "configs.shared.rooms"
-local State  = require "server.state"
+local Config   = require "configs.shared.main"
+local Hotels   = require "configs.shared.hotels"
+local Rooms    = require "configs.shared.rooms"
+local State    = require "server.state"
+local DoorLock = require "bridge.doorlock"
 
 ---@param src number
 ---@return string|nil
@@ -60,6 +61,30 @@ local M = {
 
 CreateThread(function()
     Wait(1000)
+    for _, hotel in pairs(Hotels) do
+        for _, room in ipairs(hotel.rooms or {}) do
+            DoorLock.Register(room)
+        end
+    end
+    for _, rooms in pairs(Rooms) do
+        for _, room in ipairs(rooms) do
+            DoorLock.Register(room)
+        end
+    end
+
+    local rows = MySQL.query.await("SELECT * FROM hotel_rentals WHERE expires > ?", { os.time() })
+    for _, row in pairs(rows or {}) do
+        State.Rentals[row.identifier] = State.Rentals[row.identifier] or {}
+        State.Rentals[row.identifier][#State.Rentals[row.identifier] + 1] = row
+    end
+
+    for _, src in ipairs(GetPlayers()) do
+        local identifier = GetIdentifier(tonumber(src))
+        if identifier then
+            TriggerClientEvent("hotel:syncKeys", tonumber(src), State.Rentals[identifier] or {})
+        end
+    end
+
     TriggerEvent("hotel:serverReady")
     print("^2[HOTEL]^7 Server loaded.")
 end)

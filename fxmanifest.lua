@@ -16,6 +16,11 @@ files {
     "html/images/*.*",
     "html/fonts/*.*",
     "html/sounds/*.*",
+
+    "client/*.lua",
+    "bridge/*.lua",
+    "configs/shared/*.lua",
+    "shared/*.lua",
 }
 
 shared_scripts {
@@ -28,7 +33,7 @@ client_scripts {
 
 server_scripts {
     "@oxmysql/lib/MySQL.lua",
-    "bridge/schema.sql",
+    "server/schema.lua",
     "server/_index.lua",
 }
 

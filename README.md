@@ -71,7 +71,7 @@ Build hotels directly in-game. Place reception desks, NPCs, room doors, wardrobe
 | Category | Resources |
 |---|---|
 | **Inventory** | `ox_inventory` `qb-inventory` `qs-inventory` `lj-inventory` `standalone` |
-| **Door Locks** | `ox_doorlock` `cd_doorlock` `nui_doorlock` `standalone` |
+| **Door Locks** | `standalone` (internal, native door system) |
 | **Target** | `ox_target` `qb-target` `interact` `standalone` |
 | **Wardrobe** | `illenium-appearance` `fivem-appearance` `qb-clothing` `esx_skin` `rcore_clothing` `standalone` |
 | **Phone** | `lb-phone` `qb-phone` `qs-smartphone` `gksphone` `gcPhone` `standalone` |

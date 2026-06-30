@@ -159,6 +159,15 @@ textarea {
     color: #aaa;
 }
 
+.room-floor {
+    color: #d4af37 !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px !important;
+}
+
 .room-actions {
     display: flex;
     gap: 10px;

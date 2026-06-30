@@ -1,4 +1,5 @@
-local Hotels = {}
+local Hotels  = {}
+local Banking = require "bridge.banking"
 
 local function Main() return require "server.main" end
 
@@ -73,7 +74,7 @@ RegisterNetEvent("hotel:withdrawHotelFunds", function(hotelId, amount)
     amount = tonumber(amount) or 0
     if not IsOwner(src, hotelId) then return Main().Notify(src, "No permission.", "error") end
     if not RemoveBalance(hotelId, amount) then return Main().Notify(src, "Insufficient hotel balance.", "error") end
-    exports[GetCurrentResourceName()]:AddMoney(src, amount, "bank", "hotel withdrawal")
+    Banking.Add(src, amount, "bank")
     Main().Notify(src, "Funds withdrawn.", "success")
 end)
 
@@ -81,7 +82,7 @@ RegisterNetEvent("hotel:depositHotelFunds", function(hotelId, amount)
     local src = source
     amount = tonumber(amount) or 0
     if not IsOwner(src, hotelId) then return Main().Notify(src, "No permission.", "error") end
-    if not exports[GetCurrentResourceName()]:RemoveMoney(src, amount, "bank", "hotel deposit") then
+    if not Banking.Remove(src, amount, "bank") then
         return Main().Notify(src, "Not enough money.", "error")
     end
     AddBalance(hotelId, amount)

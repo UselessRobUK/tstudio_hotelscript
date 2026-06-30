@@ -13,7 +13,7 @@ local function KeyIndex(hotelId, roomId)
 end
 
 local function HasKey(hotelId, roomId)
-    local now = os.time()
+    local now = GetCloudTimeAsInt()
     for _, key in pairs(Keys) do
         if key.hotel == hotelId and key.room == roomId then
             if not key.expires or key.expires > now then return true end
@@ -82,7 +82,7 @@ end
 CreateThread(function()
     while true do
         Wait(60000)
-        local now = os.time()
+        local now = GetCloudTimeAsInt()
         for i = #Keys, 1, -1 do
             if Keys[i].expires and Keys[i].expires <= now then
                 Notify.Info(("Room %s key expired"):format(Keys[i].room))

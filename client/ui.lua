@@ -61,17 +61,6 @@ RegisterNUICallback("rentRoom", function(data, cb)
     cb({ ok = true })
 end)
 
-RegisterNUICallback("enterRoom", function(data, cb)
-    if not CurrentHotel or not data.roomId then
-        cb({ ok = false })
-        return
-    end
-
-    TriggerEvent("hotel:enterRoom", CurrentHotel, tonumber(data.roomId))
-
-    cb({ ok = true })
-end)
-
 RegisterNUICallback("submitComplaint", function(data, cb)
     if not CurrentHotel then
         cb({ ok = false })

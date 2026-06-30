@@ -1,5 +1,6 @@
-local State = require "server.state"
-local Rooms = require "configs.shared.rooms"
+local State   = require "server.state"
+local Rooms   = require "configs.shared.rooms"
+local Banking = require "bridge.banking"
 
 local function Main() return require "server.main" end
 
@@ -44,7 +45,7 @@ local function CreateBooking(src, data)
     local pricePerHour = math.ceil((tonumber(room.price) or 0) / (tonumber(room.duration) or 24))
     local cost         = pricePerHour * hours
 
-    if not exports[GetCurrentResourceName()]:RemoveMoney(src, cost, data.payment or "bank") then
+    if not Banking.Remove(src, cost, data.payment or "bank") then
         return false, "Not enough money"
     end
 
