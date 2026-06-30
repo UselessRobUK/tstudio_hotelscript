@@ -12,11 +12,10 @@ local function GetElevator(hotelId, elevatorId)
     return nil
 end
 
-RegisterNetEvent("hotel:getElevatorFloors", function(hotelId, elevatorId)
-    local src      = source
+lib.callback.register("hotel:getElevatorFloors", function(_, hotelId, elevatorId)
     local elevator = GetElevator(hotelId, elevatorId)
-    if not elevator then return Main().Notify(src, "Elevator not found.", "error") end
-    TriggerClientEvent("hotel:openElevator", src, hotelId, elevatorId, elevator.floors or {})
+    if not elevator then return nil end
+    return { id = elevatorId, floors = elevator.floors or {} }
 end)
 
 exports("GetHotelElevator", GetElevator)

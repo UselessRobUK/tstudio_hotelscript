@@ -1,86 +1,43 @@
---========================================================--
--- Standalone Hotel Framework
--- client/cleaning.lua
---========================================================--
+local Notify = require "client.notifications"
 
-local Cleaning = {
-    active = false,
-    hotelId = nil,
-    roomId = nil
-}
+local active  = false
+local hotelId = nil
+local roomId  = nil
 
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
+RegisterCommand("hotel_clean", function(_, args)
+    local hId = args[1]
+    local rId = tonumber(args[2])
+    if not hId or not rId then return Notify.Info("/hotel_clean [hotelId] [roomId]") end
+    if active then return Notify.Error("You are already cleaning.") end
 
-local function PlayCleaningAnim()
-    TaskStartScenarioInPlace(
-        PlayerPedId(),
-        "WORLD_HUMAN_MAID_CLEAN",
-        0,
-        true
-    )
-end
+    local ok, reason = lib.callback.await("hotel:requestCleaning", false, hId, rId)
+    if not ok then return Notify.Error(reason or "You cannot clean this room.") end
 
-local function StopCleaningAnim()
-    ClearPedTasks(PlayerPedId())
-end
+    active  = true
+    hotelId = hId
+    roomId  = rId
 
-RegisterNetEvent("hotel:startCleaning", function(hotelId, roomId)
-    if Cleaning.active then
-        Notify("You are already cleaning.")
-        return
-    end
-
-    Cleaning.active = true
-    Cleaning.hotelId = hotelId
-    Cleaning.roomId = roomId
-
-    Notify("Cleaning room...")
-
-    PlayCleaningAnim()
+    Notify.Info("Cleaning room...")
+    TaskStartScenarioInPlace(PlayerPedId(), "WORLD_HUMAN_MAID_CLEAN", 0, true)
 
     local success = true
-
     for _ = 1, 5 do
         Wait(1000)
-
-        if IsPedDeadOrDying(PlayerPedId(), true) then
-            success = false
-            break
-        end
+        if IsPedDeadOrDying(PlayerPedId(), true) then success = false break end
     end
 
-    StopCleaningAnim()
+    ClearPedTasks(PlayerPedId())
 
     if success then
         TriggerServerEvent("hotel:finishCleaning", hotelId, roomId)
-        Notify("Room cleaned.")
+        Notify.Success("Room cleaned.")
     else
-        Notify("Cleaning cancelled.")
+        Notify.Info("Cleaning cancelled.")
     end
 
-    Cleaning.active = false
-    Cleaning.hotelId = nil
-    Cleaning.roomId = nil
-end)
+    active  = false
+    hotelId = nil
+    roomId  = nil
+end, false)
 
-RegisterNetEvent("hotel:cleaningFailed", function(reason)
-    Notify(reason or "You cannot clean this room.")
-end)
-
-RegisterCommand("hotel_clean", function(_, args)
-    local hotelId = args[1] or "main_hotel"
-    local roomId = tonumber(args[2])
-
-    if not roomId then
-        Notify("/hotel_clean [hotelId] [roomId]")
-        return
-    end
-
-    TriggerServerEvent("hotel:requestCleaning", hotelId, roomId)
-end)
-
-exports("IsCleaningHotelRoom", function()
-    return Cleaning.active
-end)
+exports("IsCleaningHotelRoom", function() return active end)

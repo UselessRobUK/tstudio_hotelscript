@@ -105,11 +105,9 @@ RegisterNetEvent("hotel:cancelBooking", function(bookingId)
     if not ok then Main().Notify(src, err or "Could not cancel booking.", "error") end
 end)
 
-RegisterNetEvent("hotel:getBookingRooms", function(hotelId)
-    local src   = source
+lib.callback.register("hotel:getBookingRooms", function(_, hotelId)
     local hotel = Main().GetHotel(hotelId)
-    local rooms = (hotel and hotel.rooms) or Rooms[hotelId] or {}
-    TriggerClientEvent("hotel:receiveBookingRooms", src, hotelId, rooms)
+    return (hotel and hotel.rooms) or Rooms[hotelId] or {}
 end)
 
 CreateThread(function()

@@ -62,10 +62,6 @@ local function CloseElevatorMenu()
     })
 end
 
-RegisterNetEvent("hotel:openElevator", function(hotelId, elevatorId, floors)
-    OpenElevatorMenu(hotelId, elevatorId, floors)
-end)
-
 RegisterNUICallback("elevatorClose", function(_, cb)
     CloseElevatorMenu()
     cb({ ok = true })
@@ -89,11 +85,10 @@ RegisterNUICallback("elevatorSelectFloor", function(data, cb)
 end)
 
 RegisterCommand("hotel_elevator", function(_, args)
-    local hotelId = args[1] or "main_hotel"
-    local elevatorId = args[2] or "main"
-
-    TriggerServerEvent("hotel:getElevatorFloors", hotelId, elevatorId)
-end)
+    local result = lib.callback.await("hotel:getElevatorFloors", false, args[1] or "main_hotel", args[2] or "main")
+    if not result then return Notify.Error("Elevator not found.") end
+    OpenElevatorMenu(result.id, result.floors)
+end, false)
 
 CreateThread(function()
     while true do
@@ -118,11 +113,8 @@ CreateThread(function()
                         EndTextCommandDisplayHelp(0, false, true, -1)
 
                         if IsControlJustReleased(0, Config.InteractKey or 38) then
-                            TriggerServerEvent(
-                                "hotel:getElevatorFloors",
-                                hotel.id,
-                                elevator.id
-                            )
+                            local result = lib.callback.await("hotel:getElevatorFloors", false, hotel.id, elevator.id)
+                            if result then OpenElevatorMenu(hotel.id, result.id, result.floors) end
                         end
                     end
                 end

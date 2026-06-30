@@ -1,78 +1,56 @@
---========================================================--
--- Standalone Hotel Framework
--- client/stash.lua
---========================================================--
+local Notify    = require "client.notifications"
+local Config    = require "configs.shared.main"
 
-local Stash = {}
-
-Stash.Type = "standalone"
+local stashType = "standalone"
 
 if GetResourceState("ox_inventory") == "started" then
-    Stash.Type = "ox"
+    stashType = "ox"
 elseif GetResourceState("qb-inventory") == "started" then
-    Stash.Type = "qb"
+    stashType = "qb"
 elseif GetResourceState("qs-inventory") == "started" then
-    Stash.Type = "qs"
+    stashType = "qs"
 end
 
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
-
-function Stash.Open(hotelId, roomId)
+local function OpenStash(hotelId, roomId)
     local stashId = ("hotel_%s_%s"):format(hotelId, roomId)
 
-    if Stash.Type == "ox" then
+    if stashType == "ox" then
         exports.ox_inventory:openInventory("stash", stashId)
         return
     end
 
-    if Stash.Type == "qb" then
+    if stashType == "qb" or stashType == "qs" then
         TriggerServerEvent("inventory:server:OpenInventory", "stash", stashId, {
-            maxweight = 50000,
-            slots = 30
+            maxweight = Config.StashWeight or 50000,
+            slots     = Config.StashSlots  or 30,
         })
-
-        TriggerEvent("inventory:client:SetCurrentStash", stashId)
+        if stashType == "qb" then
+            TriggerEvent("inventory:client:SetCurrentStash", stashId)
+        end
         return
     end
 
-    if Stash.Type == "qs" then
-        TriggerServerEvent("inventory:server:OpenInventory", "stash", stashId, {
-            maxweight = 50000,
-            slots = 30
-        })
-
-        return
-    end
-
-    Notify("Standalone stash opened: " .. stashId)
+    Notify.Info("Stash: " .. stashId)
 end
 
-RegisterNetEvent("hotel:openStashClient", function(hotelId, roomId)
-    Stash.Open(hotelId, roomId)
+-- server-push: admin/external opens a stash for this client directly
+RegisterNetEvent("hotel:stashApproved", function(hotelId, roomId)
+    OpenStash(hotelId, roomId)
 end)
 
 RegisterNetEvent("hotel:openStash", function(hotelId, roomId)
-    TriggerServerEvent("hotel:requestStashAccess", hotelId, roomId)
-end)
-
-RegisterNetEvent("hotel:stashApproved", function(hotelId, roomId)
-    Stash.Open(hotelId, roomId)
+    local granted = lib.callback.await("hotel:requestStashAccess", false, hotelId, roomId)
+    if not granted then return Notify.Error("You don't have access to this stash.") end
+    OpenStash(hotelId, roomId)
 end)
 
 RegisterCommand("hotelstash", function(_, args)
-    local hotelId = args[1]
-    local roomId = tonumber(args[2])
+    local hId = args[1]
+    local rId = tonumber(args[2])
+    if not hId or not rId then return Notify.Info("/hotelstash [hotelId] [roomId]") end
+    local granted = lib.callback.await("hotel:requestStashAccess", false, hId, rId)
+    if not granted then return Notify.Error("You don't have access to this stash.") end
+    OpenStash(hId, rId)
+end, false)
 
-    if not hotelId or not roomId then
-        Notify("/hotelstash [hotelId] [roomId]")
-        return
-    end
-
-    TriggerServerEvent("hotel:requestStashAccess", hotelId, roomId)
-end)
-
-exports("OpenHotelStash", function(hotelId, roomId)
-    TriggerServerEvent("hotel:requestStashAccess", hotelId, roomId)
-end)
+exports("OpenHotelStash", OpenStash)

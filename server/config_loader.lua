@@ -28,8 +28,8 @@ RegisterCommand("hotel_reload", function(src)
     if src == 0 then print("^2[HOTEL]^7 Config reloaded.") else Main().Notify(src, "Hotel config reloaded.", "success") end
 end)
 
-RegisterNetEvent("hotel:getConfigHotels", function()
-    TriggerClientEvent("hotel:receiveConfigHotels", source, GetHotels())
+lib.callback.register("hotel:getConfigHotels", function(_)
+    return GetHotels()
 end)
 
 exports("HotelReloadConfig",    Reload)

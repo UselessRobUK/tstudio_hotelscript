@@ -1,54 +1,30 @@
---========================================================--
--- Standalone Hotel Framework
--- client/booking.lua
---========================================================--
+local Notify = require "client.notifications"
 
 local Booking = {
-    open = false,
+    open    = false,
     hotelId = nil,
-    rooms = {}
+    rooms   = {},
 }
 
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
-
 local function OpenBooking(hotelId)
-    Booking.open = true
+    local rooms     = lib.callback.await("hotel:getBookingRooms", false, hotelId)
+    Booking.open    = true
     Booking.hotelId = hotelId
-
+    Booking.rooms   = rooms or {}
     SetNuiFocus(true, true)
-
-    TriggerServerEvent("hotel:getBookingRooms", hotelId)
+    SendNUIMessage({ action = "openBooking", data = { hotel = hotelId, rooms = Booking.rooms } })
 end
 
 local function CloseBooking()
-    Booking.open = false
+    Booking.open    = false
     Booking.hotelId = nil
-    Booking.rooms = {}
-
+    Booking.rooms   = {}
     SetNuiFocus(false, false)
-
-    SendNUIMessage({
-        action = "closeBooking"
-    })
+    SendNUIMessage({ action = "closeBooking" })
 end
 
 RegisterNetEvent("hotel:openBooking", function(hotelId)
     OpenBooking(hotelId)
-end)
-
-RegisterNetEvent("hotel:receiveBookingRooms", function(hotelId, rooms)
-    Booking.hotelId = hotelId
-    Booking.rooms = rooms or {}
-
-    SendNUIMessage({
-        action = "openBooking",
-        data = {
-            hotel = hotelId,
-            rooms = Booking.rooms
-        }
-    })
 end)
 
 RegisterNUICallback("bookingClose", function(_, cb)
@@ -104,32 +80,30 @@ RegisterNUICallback("extendBooking", function(data, cb)
     cb({ ok = true })
 end)
 
-RegisterNetEvent("hotel:bookingCreated", function(roomId)
-    Notify(("Booking confirmed for room %s."):format(roomId))
+local function RefreshRooms()
+    if not Booking.hotelId then return end
+    local rooms   = lib.callback.await("hotel:getBookingRooms", false, Booking.hotelId)
+    Booking.rooms = rooms or {}
+    SendNUIMessage({ action = "updateBookingRooms", data = { hotel = Booking.hotelId, rooms = Booking.rooms } })
+end
 
-    if Booking.hotelId then
-        TriggerServerEvent("hotel:getBookingRooms", Booking.hotelId)
-    end
+RegisterNetEvent("hotel:bookingCreated", function(roomId)
+    Notify.Success(("Booking confirmed for room %s."):format(roomId))
+    RefreshRooms()
 end)
 
 RegisterNetEvent("hotel:bookingCancelled", function()
-    Notify("Booking cancelled.")
-
-    if Booking.hotelId then
-        TriggerServerEvent("hotel:getBookingRooms", Booking.hotelId)
-    end
+    Notify.Info("Booking cancelled.")
+    RefreshRooms()
 end)
 
 RegisterNetEvent("hotel:bookingExtended", function()
-    Notify("Booking extended.")
-
-    if Booking.hotelId then
-        TriggerServerEvent("hotel:getBookingRooms", Booking.hotelId)
-    end
+    Notify.Info("Booking extended.")
+    RefreshRooms()
 end)
 
 RegisterNetEvent("hotel:bookingFailed", function(reason)
-    Notify(reason or "Booking failed.")
+    Notify.Error(reason or "Booking failed.")
 end)
 
 RegisterCommand("hotel_book", function(_, args)

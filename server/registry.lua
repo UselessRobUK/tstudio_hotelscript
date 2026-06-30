@@ -34,8 +34,8 @@ local function GetAllHotels()
     return all
 end
 
-RegisterNetEvent("hotel:getHotels", function()
-    TriggerClientEvent("hotel:receiveHotels", source, GetAllHotels())
+lib.callback.register("hotel:getHotels", function(_)
+    return GetAllHotels()
 end)
 
 RegisterNetEvent("hotel:registerRuntimeHotel", function(hotelId, data)

@@ -23,11 +23,9 @@ RegisterNetEvent("hotel:deleteLayout", function(hotelId)
     Main().Notify(src, "Hotel layout deleted.", "success")
 end)
 
-RegisterNetEvent("hotel:getLayouts", function()
-    local src = source
-    if not Security().IsAdmin(src) then return Main().Notify(src, "No permission.", "error") end
-    local layouts = Persistence().ReadJson("data/layouts.json") or {}
-    TriggerClientEvent("hotel:receiveLayouts", src, layouts)
+lib.callback.register("hotel:getLayouts", function(src)
+    if not Security().IsAdmin(src) then return nil end
+    return Persistence().ReadJson("data/layouts.json") or {}
 end)
 
 exports("SaveHotelLayout", function(data)

@@ -15,7 +15,7 @@ end
 ---@param src number
 ---@return boolean
 local function Open(src)
-    TriggerClientEvent("hotel:wardrobeApproved", src)
+    TriggerClientEvent("hotel:wardrobeOpen", src)
     return true
 end
 

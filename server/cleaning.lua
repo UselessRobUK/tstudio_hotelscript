@@ -32,14 +32,11 @@ local function GetState(hotelId, roomId)
     return State.RoomStates[hotelId .. "_" .. tonumber(roomId)] or "clean"
 end
 
-RegisterNetEvent("hotel:requestCleaning", function(hotelId, roomId)
-    local src  = source
+lib.callback.register("hotel:requestCleaning", function(src, hotelId, roomId)
     local room = Main().GetRoom(hotelId, tonumber(roomId))
-    if not room then return Main().Notify(src, "Invalid room.", "error") end
-    if GetState(hotelId, roomId) ~= "dirty" then
-        return TriggerClientEvent("hotel:cleaningFailed", src, "Room is already clean.")
-    end
-    TriggerClientEvent("hotel:startCleaning", src, hotelId, tonumber(roomId))
+    if not room then return false, "Invalid room." end
+    if GetState(hotelId, roomId) ~= "dirty" then return false, "Room is already clean." end
+    return true
 end)
 
 RegisterNetEvent("hotel:finishCleaning", function(hotelId, roomId)

@@ -87,17 +87,12 @@ RegisterNetEvent("hotel:syncKeys", function()
     TriggerClientEvent("hotel:syncKeys", src, Get(identifier))
 end)
 
-RegisterNetEvent("hotel:requestRoomEntry", function(hotelId, roomId)
-    local src        = source
+lib.callback.register("hotel:requestRoomEntry", function(src, hotelId, roomId)
     local identifier = Main().GetIdentifier(src)
-    if not identifier then return end
-
-    if not Has(identifier, hotelId, tonumber(roomId)) then
-        return Main().Notify(src, "You don't own this room key.", "error")
-    end
-
-    TriggerClientEvent("hotel:roomAccessApproved", src, hotelId, tonumber(roomId))
+    if not identifier then return false end
+    if not Has(identifier, hotelId, tonumber(roomId)) then return false end
     TriggerClientEvent("hotel:requestEnterInstance", src, hotelId, tonumber(roomId))
+    return true
 end)
 
 RegisterNetEvent("hotel:duplicateKey", function(hotelId, roomId)

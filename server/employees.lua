@@ -39,10 +39,9 @@ local function Fire(src, targetIdentifier, hotelId)
     return true
 end
 
-RegisterNetEvent("hotel:getEmployees", function(hotelId)
-    local src = source
-    if not Boss().IsBoss(src, hotelId) then return Main().Notify(src, "No permission.", "error") end
-    TriggerClientEvent("hotel:receiveEmployees", src, hotelId, GetEmployees(hotelId))
+lib.callback.register("hotel:getEmployees", function(src, hotelId)
+    if not Boss().IsBoss(src, hotelId) then return nil end
+    return GetEmployees(hotelId)
 end)
 
 RegisterNetEvent("hotel:hireEmployee", function(hotelId, targetIdentifier, role)

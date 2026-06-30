@@ -4,12 +4,8 @@ local Rooms  = require "configs.shared.rooms"
 
 local function Main() return require "server.main" end
 
-RegisterNetEvent("hotel:requestStashAccess", function(hotelId, roomId)
-    local src = source
-    if not exports[GetCurrentResourceName()]:HasRoomAccess(src, hotelId, tonumber(roomId)) then
-        return Main().Notify(src, "You don't have access to this stash.", "error")
-    end
-    TriggerClientEvent("hotel:stashApproved", src, hotelId, tonumber(roomId))
+lib.callback.register("hotel:requestStashAccess", function(src, hotelId, roomId)
+    return exports[GetCurrentResourceName()]:HasRoomAccess(src, hotelId, tonumber(roomId))
 end)
 
 CreateThread(function()

@@ -2,14 +2,6 @@ local Wardrobe = require "bridge.wardrobe"
 
 local function Main() return require "server.main" end
 
-RegisterNetEvent("hotel:openWardrobe", function(hotelId, roomId)
-    local src = source
-    if not exports[GetCurrentResourceName()]:HasRoomAccess(src, hotelId, tonumber(roomId)) then
-        return Main().Notify(src, "You don't have access to this room.", "error")
-    end
-    TriggerClientEvent("hotel:wardrobeApproved", src, hotelId, tonumber(roomId))
-end)
-
 RegisterNetEvent("hotel:saveOutfit", function(name, skin)
     local src        = source
     local identifier = Main().GetIdentifier(src)
@@ -21,12 +13,10 @@ RegisterNetEvent("hotel:saveOutfit", function(name, skin)
     Main().Notify(src, "Outfit saved.", "success")
 end)
 
-RegisterNetEvent("hotel:getOutfits", function()
-    local src        = source
+lib.callback.register("hotel:getOutfits", function(src)
     local identifier = Main().GetIdentifier(src)
-    if not identifier then return end
-    local outfits = MySQL.query.await("SELECT * FROM hotel_outfits WHERE identifier = ?", { identifier }) or {}
-    TriggerClientEvent("hotel:receiveOutfits", src, outfits)
+    if not identifier then return {} end
+    return MySQL.query.await("SELECT * FROM hotel_outfits WHERE identifier = ?", { identifier }) or {}
 end)
 
 RegisterNetEvent("hotel:deleteOutfit", function(id)

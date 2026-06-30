@@ -70,10 +70,8 @@ local function TransferToHotel(src, hotelId, amount, account, reason)
     return true
 end
 
-RegisterNetEvent("hotel:getBalance", function(account)
-    local src     = source
-    local balance = GetMoney(src, account)
-    TriggerClientEvent("hotel:receiveBalance", src, account or "cash", balance)
+lib.callback.register("hotel:getBalance", function(src, account)
+    return { account = account or "cash", balance = GetMoney(src, account) }
 end)
 
 exports("GetMoney",         GetMoney)

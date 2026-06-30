@@ -67,11 +67,10 @@ RegisterNetEvent("hotel:removeStaffRole", function(targetIdentifier, role)
     Main().Notify(src, "Staff role removed.", "success")
 end)
 
-RegisterNetEvent("hotel:getMyHotelJob", function()
-    local src        = source
-    local identifier = Main().GetIdentifier(src)
+lib.callback.register("hotel:getMyHotelJob", function(src)
+    local identifier  = Main().GetIdentifier(src)
     local role, hotel = GetRole(identifier)
-    TriggerClientEvent("hotel:receiveMyHotelJob", src, { role = role, hotel = hotel })
+    return { role = role, hotel = hotel }
 end)
 
 CreateThread(function()

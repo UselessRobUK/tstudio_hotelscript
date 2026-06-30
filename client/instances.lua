@@ -1,46 +1,13 @@
---========================================================--
--- Standalone Hotel Framework
--- client/instances.lua
---========================================================--
+local Notify = require "client.notifications"
+local Utils  = require "client.utils"
 
 local Instance = {
-    active = false,
-    id = nil,
-    hotelId = nil,
-    roomId = nil,
-    returnCoords = nil
+    active       = false,
+    id           = nil,
+    hotelId      = nil,
+    roomId       = nil,
+    returnCoords = nil,
 }
-
-local function Notify(msg)
-    TriggerEvent("hotel:notify", msg)
-end
-
-local function FadeTeleport(coords, heading)
-    DoScreenFadeOut(500)
-    while not IsScreenFadedOut() do Wait(0) end
-
-    local ped = PlayerPedId()
-
-    SetEntityCoords(
-        ped,
-        coords.x,
-        coords.y,
-        coords.z,
-        false,
-        false,
-        false,
-        true
-    )
-
-    if heading then
-        SetEntityHeading(ped, heading)
-    elseif coords.w then
-        SetEntityHeading(ped, coords.w)
-    end
-
-    Wait(300)
-    DoScreenFadeIn(500)
-end
 
 RegisterNetEvent("hotel:enterInstance", function(data)
     if not data then return end
@@ -55,18 +22,18 @@ RegisterNetEvent("hotel:enterInstance", function(data)
 
     local coords = data.coords or vector4(-786.0, 315.0, 217.0, 0.0)
 
-    FadeTeleport(coords, coords.w)
+    Utils.FadeTeleport(coords, coords.w)
 
     NetworkSetVoiceChannel(tonumber(data.voiceChannel) or 0)
 
-    Notify("Entered private hotel room.")
+    Notify.Info("Entered private hotel room.")
 end)
 
 RegisterNetEvent("hotel:leaveInstance", function(data)
     local coords = data and data.coords or Instance.returnCoords
 
     if coords then
-        FadeTeleport(coords, coords.w)
+        Utils.FadeTeleport(coords, coords.w)
     end
 
     NetworkClearVoiceChannel()
@@ -77,7 +44,7 @@ RegisterNetEvent("hotel:leaveInstance", function(data)
     Instance.roomId = nil
     Instance.returnCoords = nil
 
-    Notify("Left private hotel room.")
+    Notify.Info("Left private hotel room.")
 end)
 
 RegisterNetEvent("hotel:updateInstancePlayers", function(players)
@@ -89,7 +56,7 @@ end)
 
 RegisterCommand("hotel_leaveinstance", function()
     if not Instance.active then
-        Notify("You are not inside a hotel instance.")
+        Notify.Info("You are not inside a hotel instance.")
         return
     end
 
