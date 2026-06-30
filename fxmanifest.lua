@@ -7,15 +7,10 @@ author "TSTUDIO"
 description "Hotel Management Script"
 version "1.0.0"
 
-ui_page "html/index.html"
+ui_page "web/dist/index.html"
 
 files {
-    "html/index.html",
-    "html/style.css",
-    "html/app.js",
-    "html/images/*.*",
-    "html/fonts/*.*",
-    "html/sounds/*.*",
+    "web/dist/**/*.*",
 
     "client/*.lua",
     "bridge/*.lua",
@@ -40,9 +35,7 @@ server_scripts {
 escrow_ignore {
     "configs/**/*.lua",
     "shared/**/*.lua",
-    "html/*.css",
-    "html/*.js",
-    "html/*.html",
+    "web/dist/**/*.*",
 }
 
 dependencies {

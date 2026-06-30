@@ -1,269 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Management</title>
-
     <link rel="stylesheet" href="style.css">
-
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com">
-
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
 <div id="app" class="hidden">
 
-    <!--=============================================-->
     <!-- Header -->
-    <!--=============================================-->
-
     <header>
-
-        <div>
-
-            <h1 id="hotelName">
-                Hotel
-            </h1>
-
-            <span id="hotelSubtitle">
-                Premium Accommodation
-            </span>
-
+        <div class="header-info">
+            <h1 id="hotelName">Hotel</h1>
+            <span id="hotelSubtitle">Premium Accommodation</span>
         </div>
-
-        <button id="closeButton">
-            ✕
-        </button>
-
+        <button id="closeButton">✕</button>
     </header>
 
-    <!--=============================================-->
     <!-- Sidebar -->
-    <!--=============================================-->
-
     <aside>
-
-        <button class="menu active"
-            data-page="rooms">
-
-            Rooms
-
+        <button class="menu active" data-page="rooms">
+            <span class="menu-icon">🏠</span> Rooms
         </button>
-
-        <button class="menu"
-            data-page="bookings">
-
-            Bookings
-
+        <button class="menu" data-page="bookings">
+            <span class="menu-icon">📋</span> My Booking
         </button>
-
-        <button class="menu"
-            data-page="complaints">
-
-            Complaints
-
+        <button class="menu" data-page="complaints">
+            <span class="menu-icon">💬</span> Complaints
         </button>
-
-        <button class="menu"
-            data-page="boss">
-
-            Management
-
+        <button class="menu boss-only hidden" data-page="boss">
+            <span class="menu-icon">👔</span> Management
         </button>
-
-        <button class="menu"
-            data-page="settings">
-
-            Settings
-
+        <button class="menu" data-page="settings">
+            <span class="menu-icon">⚙️</span> Settings
         </button>
-
     </aside>
 
-    <!--=============================================-->
-    <!-- Content -->
-    <!--=============================================-->
-
+    <!-- Main -->
     <main>
 
-        <!--=============================-->
         <!-- Rooms -->
-        <!--=============================-->
-
-        <section
-            id="rooms"
-            class="page active">
-
+        <section id="rooms" class="page active">
             <div class="toolbar">
-
-                <input
-                    id="roomSearch"
-                    type="text"
-                    placeholder="Search room">
-
+                <input id="roomSearch" type="text" placeholder="Search rooms…">
             </div>
-
-            <div id="roomGrid">
-
-            </div>
-
+            <div id="roomGrid"></div>
         </section>
 
-        <!--=============================-->
-        <!-- Bookings -->
-        <!--=============================-->
-
-        <section
-            id="bookings"
-            class="page">
-
-            <div id="bookingList">
-
+        <!-- My Booking -->
+        <section id="bookings" class="page">
+            <div id="bookingContent">
+                <div class="empty-state">
+                    <span class="empty-icon">🛏️</span>
+                    <p>You don't have an active booking.</p>
+                </div>
             </div>
-
         </section>
 
-        <!--=============================-->
         <!-- Complaints -->
-        <!--=============================-->
-
-        <section
-            id="complaints"
-            class="page">
-
-            <textarea
-                id="complaintText"
-                placeholder="Describe your issue...">
-
-            </textarea>
-
-            <button id="submitComplaint">
-
-                Submit Complaint
-
-            </button>
-
-        </section>
-
-        <!--=============================-->
-        <!-- Boss -->
-        <!--=============================-->
-
-        <section
-            id="boss"
-            class="page">
-
-            <div class="stats">
-
-                <div class="card">
-
-                    <h2 id="revenue">
-                        £0
-                    </h2>
-
-                    <span>
-                        Revenue
-                    </span>
-
-                </div>
-
-                <div class="card">
-
-                    <h2 id="occupiedRooms">
-                        0
-                    </h2>
-
-                    <span>
-                        Occupied
-                    </span>
-
-                </div>
-
-                <div class="card">
-
-                    <h2 id="complaintCount">
-                        0
-                    </h2>
-
-                    <span>
-                        Complaints
-                    </span>
-
-                </div>
-
-            </div>
-
-            <div id="bossContent">
-
-            </div>
-
-        </section>
-
-        <!--=============================-->
-        <!-- Settings -->
-        <!--=============================-->
-
-        <section
-            id="settings"
-            class="page">
-
-            <h2>
-
-                Hotel Settings
-
-            </h2>
-
-            <div class="setting">
-
-                <label>
-
-                    Payment Method
-
-                </label>
-
-                <select id="paymentMethod">
-
-                    <option value="cash">
-
-                        Cash
-
-                    </option>
-
-                    <option value="bank">
-
-                        Bank
-
-                    </option>
-
+        <section id="complaints" class="page">
+            <div class="form-section">
+                <h2 class="section-title">Submit a Complaint</h2>
+                <label class="field-label">Category</label>
+                <select id="complaintCategory">
+                    <option value="Noise">Noise</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Billing">Billing</option>
+                    <option value="Security">Security</option>
+                    <option value="Other">Other</option>
                 </select>
+                <label class="field-label" style="margin-top:14px;">Message</label>
+                <textarea id="complaintText" placeholder="Describe your issue…"></textarea>
+                <button id="submitComplaint">Submit Complaint</button>
+                <div id="complaintSuccess" class="success-msg hidden">
+                    ✓ Complaint submitted. We'll look into it shortly.
+                </div>
+            </div>
+        </section>
 
+        <!-- Boss Management -->
+        <section id="boss" class="page">
+            <div class="stats">
+                <div class="stat-card">
+                    <h2 id="revenue">$0</h2>
+                    <span>Revenue</span>
+                </div>
+                <div class="stat-card">
+                    <h2 id="occupiedRooms">0</h2>
+                    <span>Occupied</span>
+                </div>
+                <div class="stat-card">
+                    <h2 id="complaintCount">0</h2>
+                    <span>Complaints</span>
+                </div>
             </div>
 
+            <div class="boss-tabs">
+                <button class="boss-tab active" data-btab="bossRooms">Rooms</button>
+                <button class="boss-tab" data-btab="bossTenants">Tenants</button>
+                <button class="boss-tab" data-btab="bossComplaints">Complaints</button>
+            </div>
+
+            <div id="bossRooms"      class="boss-panel active"></div>
+            <div id="bossTenants"    class="boss-panel"></div>
+            <div id="bossComplaints" class="boss-panel"></div>
+        </section>
+
+        <!-- Settings -->
+        <section id="settings" class="page">
+            <h2 class="section-title">Settings</h2>
+            <div class="setting">
+                <label class="field-label">Default Payment Method</label>
+                <select id="paymentMethod">
+                    <option value="cash">💵 Cash</option>
+                    <option value="bank">💳 Bank Card</option>
+                </select>
+            </div>
         </section>
 
     </main>
 
+    <!-- Rent Confirm Modal -->
+    <div id="rentModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 class="modal-title">Confirm Booking</h3>
+            <div class="modal-room-info">
+                <span id="modalRoomName">Room 101</span>
+                <span id="modalRoomPrice" class="modal-price">$250</span>
+            </div>
+            <p id="modalRoomDuration" class="modal-meta">24-hour stay · non-refundable</p>
+            <div class="modal-actions">
+                <button id="confirmRent">Confirm</button>
+                <button id="cancelRent" class="secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fine Modal -->
+    <div id="fineModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 class="modal-title">Issue Fine</h3>
+            <p id="fineTargetLabel" class="modal-meta"></p>
+            <label class="field-label">Amount ($)</label>
+            <input id="fineAmount" type="number" placeholder="e.g. 500">
+            <label class="field-label" style="margin-top:10px;">Reason</label>
+            <input id="fineReason" type="text" placeholder="Hotel fine">
+            <div class="modal-actions" style="margin-top:16px;">
+                <button id="confirmFine">Issue Fine</button>
+                <button id="cancelFine" class="secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="app.js"></script>
-
 </body>
 </html>

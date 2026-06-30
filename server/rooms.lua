@@ -39,15 +39,38 @@ local function SetPrice(hotelId, roomId, price)
     return true
 end
 
-lib.callback.register("hotel:getRoomAvailability", function(_, hotelId)
+lib.callback.register("hotel:getRoomAvailability", function(src, hotelId)
+    local myIdentifier = Main().GetIdentifier(src)
+    local now  = os.time()
     local list = {}
+
     for _, room in pairs(GetAll(hotelId)) do
+        local available = true
+        local myRoom    = false
+        local expires   = nil
+
+        for ident, rentals in pairs(State.Rentals or {}) do
+            for _, rental in pairs(rentals) do
+                if rental.hotel == hotelId
+                and tonumber(rental.room) == tonumber(room.id)
+                and tonumber(rental.expires) > now then
+                    available = false
+                    expires   = rental.expires
+                    if ident == myIdentifier then myRoom = true end
+                    break
+                end
+            end
+            if not available then break end
+        end
+
         list[#list + 1] = {
             id        = room.id,
             label     = room.label,
             price     = room.price,
             duration  = room.duration,
-            available = IsAvailable(hotelId, room.id),
+            available = available,
+            myRoom    = myRoom,
+            expires   = expires,
             state     = State.RoomStates[hotelId .. "_" .. room.id] or "clean",
         }
     end

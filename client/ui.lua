@@ -1,7 +1,15 @@
 local Notify = require "client.notifications"
+local Hotels = require "configs.shared.hotels"
 
 local NuiOpen      = false
 local CurrentHotel = nil
+
+local function GetHotelName(hotelId)
+    for _, hotel in ipairs(Hotels) do
+        if hotel.id == hotelId then return hotel.name end
+    end
+    return hotelId
+end
 
 local function OpenUI(action, payload)
     NuiOpen = true
@@ -17,23 +25,25 @@ local function CloseUI()
 end
 
 RegisterNetEvent("hotel:openMenu", function(hotelId)
-    CurrentHotel  = hotelId
-    local rooms   = lib.callback.await("hotel:getRooms", false, hotelId)
-    OpenUI("openHotel", { hotel = hotelId, rooms = rooms or {} })
+    CurrentHotel = hotelId
+    local rooms  = lib.callback.await("hotel:getRoomAvailability", false, hotelId)
+    OpenUI("openHotel", { hotel = hotelId, hotelName = GetHotelName(hotelId), rooms = rooms or {} })
 end)
 
 RegisterNetEvent("hotel:openBossMenu", function(hotelId)
-    CurrentHotel     = hotelId
-    local dashboard  = lib.callback.await("hotel:getDashboard", false, hotelId)
+    CurrentHotel    = hotelId
+    local dashboard = lib.callback.await("hotel:getDashboard", false, hotelId)
     if not dashboard then return Notify.Error("No permission.") end
-    OpenUI("openBoss", { hotel = hotelId, dashboard = dashboard })
+    local rooms     = lib.callback.await("hotel:getRoomAvailability", false, hotelId)
+    dashboard.rooms = rooms or {}
+    OpenUI("openBoss", { hotel = hotelId, hotelName = GetHotelName(hotelId), dashboard = dashboard })
 end)
 
 RegisterNetEvent("hotel:openComplaints", function(hotelId)
-    CurrentHotel       = hotelId
-    local complaints   = lib.callback.await("hotel:getComplaints", false, hotelId)
+    CurrentHotel     = hotelId
+    local complaints = lib.callback.await("hotel:getComplaints", false, hotelId)
     if not complaints then return Notify.Error("No permission.") end
-    OpenUI("openComplaints", { hotel = hotelId, complaints = complaints })
+    OpenUI("openComplaints", { hotel = hotelId, hotelName = GetHotelName(hotelId), complaints = complaints })
 end)
 
 RegisterNUICallback("close", function(_, cb)
@@ -46,97 +56,75 @@ RegisterNUICallback("rentRoom", function(data, cb)
         cb({ ok = false, error = "No hotel selected" })
         return
     end
-
     if not data or not data.roomId then
         cb({ ok = false, error = "Invalid room" })
         return
     end
-
     TriggerServerEvent("hotel:rentRoom", {
         hotelId = CurrentHotel,
-        roomId = tonumber(data.roomId),
-        payment = data.payment or "cash"
+        roomId  = tonumber(data.roomId),
+        payment = data.payment or "cash",
     })
-
     cb({ ok = true })
 end)
 
 RegisterNUICallback("submitComplaint", function(data, cb)
-    if not CurrentHotel then
-        cb({ ok = false })
-        return
-    end
-
+    if not CurrentHotel then cb({ ok = false }) return end
     local message = data and data.message
-
     if not message or message == "" then
         cb({ ok = false, error = "Empty complaint" })
         return
     end
-
     TriggerServerEvent("hotel:submitComplaint", {
-        hotel = CurrentHotel,
-        message = message
+        hotel    = CurrentHotel,
+        message  = message,
+        category = data.category or "Other",
+        roomId   = data.roomId,
     })
-
     cb({ ok = true })
 end)
 
 RegisterNUICallback("bossChangePrice", function(data, cb)
-    TriggerServerEvent(
-        "hotel:changePrice",
-        CurrentHotel,
-        tonumber(data.roomId),
-        tonumber(data.price)
-    )
-
+    TriggerServerEvent("hotel:changePrice", CurrentHotel, tonumber(data.roomId), tonumber(data.price))
     cb({ ok = true })
 end)
 
 RegisterNUICallback("bossEvict", function(data, cb)
-    TriggerServerEvent("hotel:evictPlayer", data.identifier)
+    TriggerServerEvent("hotel:evictPlayer", CurrentHotel, data.identifier)
     cb({ ok = true })
 end)
 
 RegisterNUICallback("bossFine", function(data, cb)
     TriggerServerEvent(
         "hotel:issueFine",
+        CurrentHotel,
         data.identifier,
         tonumber(data.amount),
         data.reason or "Hotel fine"
     )
-
     cb({ ok = true })
 end)
 
 RegisterNUICallback("resolveComplaint", function(data, cb)
-    TriggerServerEvent("hotel:resolveComplaint", tonumber(data.id))
+    TriggerServerEvent("hotel:resolveComplaint", CurrentHotel, tonumber(data.id))
     cb({ ok = true })
 end)
 
 RegisterNetEvent("hotel:uiRefreshRooms", function()
     if not CurrentHotel or not NuiOpen then return end
-    local rooms = lib.callback.await("hotel:getRooms", false, CurrentHotel)
+    local rooms = lib.callback.await("hotel:getRoomAvailability", false, CurrentHotel)
     SendNUIMessage({ action = "updateRooms", data = { hotel = CurrentHotel, rooms = rooms or {} } })
 end)
 
 RegisterCommand("hotel_closeui", function()
-    if NuiOpen then
-        CloseUI()
-    end
+    if NuiOpen then CloseUI() end
 end)
 
 RegisterCommand("hotel_boss", function(_, args)
-    local hotelId = args[1] or CurrentHotel or "main_hotel"
+    local hotelId = args[1] or CurrentHotel or "peak"
     TriggerEvent("hotel:openBossMenu", hotelId)
 end)
 
-exports("OpenHotelUI", function(hotelId)
-    TriggerEvent("hotel:openMenu", hotelId)
-end)
-
+exports("OpenHotelUI",  function(hotelId) TriggerEvent("hotel:openMenu", hotelId) end)
 exports("CloseHotelUI", CloseUI)
-
-exports("IsHotelUIOpen", function()
-    return NuiOpen
-end)
+exports("IsHotelUIOpen", function() return NuiOpen end)
