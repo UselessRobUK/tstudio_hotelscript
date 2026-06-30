@@ -139,7 +139,7 @@ Tested on OneSync Infinity. Actual numbers vary by hotel count, active integrati
 ## Folder Structure
 
 ```
-ultimate_hotel/
+tstudio_hotelscript/
 ├── bridge/
 ├── client/
 ├── server/
