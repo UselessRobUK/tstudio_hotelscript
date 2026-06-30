@@ -31,14 +31,6 @@ return {
         -- ["license:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"] = true,
     },
 
-    Webhooks = {
-        default    = "",
-        rentals    = "",
-        bookings   = "",
-        complaints = "",
-        staff      = "",
-    },
-
     OptionalResources = {
         inventory = "auto",
         banking   = "standalone",

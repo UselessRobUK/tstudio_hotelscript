@@ -78,47 +78,6 @@ AddEventHandler("playerJoining", function()
     TriggerClientEvent("hotel:syncKeys", src, rows or {})
 end)
 
-RegisterNetEvent("hotel:rentRoom", function(data)
-    local src = source
-    if type(data) ~= "table" then return end
-
-    local hotelId = data.hotelId
-    local roomId  = tonumber(data.roomId)
-    local payment = data.payment or Config.DefaultPayment or "cash"
-
-    local identifier = GetIdentifier(src)
-    if not identifier then return end
-
-    local room = GetRoom(hotelId, roomId)
-    if not room then return Notify(src, "Invalid room.", "error") end
-
-    if State.Rentals[identifier] and #State.Rentals[identifier] > 0 then
-        return Notify(src, "You already have an active hotel room.", "error")
-    end
-
-    local price = tonumber(room.price) or 0
-
-    if not exports[GetCurrentResourceName()]:RemoveMoney(src, price, payment) then
-        return Notify(src, "You do not have enough money.", "error")
-    end
-
-    local expires = os.time() + ((tonumber(room.duration) or 24) * 3600)
-    local rental  = { identifier = identifier, hotel = hotelId, room = roomId, expires = expires }
-
-    State.Rentals[identifier] = { rental }
-
-    MySQL.insert.await(
-        "INSERT INTO hotel_rentals (identifier, hotel, room, expires) VALUES (?, ?, ?, ?)",
-        { identifier, hotelId, roomId, expires }
-    )
-
-    State.Revenue[hotelId] = (State.Revenue[hotelId] or 0) + price
-
-    TriggerClientEvent("hotel:receiveKey", src, { hotel = hotelId, room = roomId, expires = expires })
-    TriggerClientEvent("hotel:anim:receiveKey", src)
-    Notify(src, "Room rented successfully.", "success")
-end)
-
 lib.callback.register("hotel:getRooms", function(src, hotelId)
     local hotel = GetHotel(hotelId)
     return (hotel and hotel.rooms) or Rooms[hotelId] or {}
@@ -156,27 +115,6 @@ CreateThread(function()
             if #rentals == 0 then State.Rentals[identifier] = nil end
         end
     end
-end)
-
-exports("GetIdentifier",    GetIdentifier)
-exports("GetHotel",         GetHotel)
-exports("GetRoom",          GetRoom)
-
-exports("GetPlayerRentals", function(src)
-    local identifier = GetIdentifier(src)
-    return State.Rentals[identifier] or {}
-end)
-
-exports("HasRoomAccess", function(src, hotelId, roomId)
-    local identifier = GetIdentifier(src)
-    for _, rental in pairs(State.Rentals[identifier] or {}) do
-        if rental.hotel == hotelId
-        and tonumber(rental.room) == tonumber(roomId)
-        and tonumber(rental.expires) > os.time() then
-            return true
-        end
-    end
-    return false
 end)
 
 return M

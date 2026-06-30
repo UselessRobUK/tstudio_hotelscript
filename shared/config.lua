@@ -1,2 +1,0 @@
--- Moved to configs/shared/main.lua
--- Use: local Config = require "configs.shared.main"

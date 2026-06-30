@@ -1,12 +1,13 @@
-local Config = require "configs.shared.main"
+local ServerConfig = require "configs.server.main"
 
 local Colors = { success = 5763719, error = 15548997, warning = 16776960, info = 3447003 }
 
 ---@param name string
 ---@return string|nil
 local function GetUrl(name)
-    if not Config.Webhooks then return nil end
-    return Config.Webhooks[name] or Config.Webhooks.default
+    local webhooks = ServerConfig.Webhooks
+    if not webhooks then return nil end
+    return webhooks[name] or webhooks.default
 end
 
 ---@param webhookName string
