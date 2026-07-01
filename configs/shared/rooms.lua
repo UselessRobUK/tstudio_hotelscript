@@ -270,5 +270,65 @@ return {
             stash    = vector3(49.5925, -923.2458, 206.5977),
             wardrobe = vector3(63.2700, -915.8085, 207.1707),
         },
+        {
+            id       = 1601,
+            label    = "1604",
+            price    = 250,
+            duration = 24,
+
+            door = {
+                id      = "peak_1601",
+                coords  = vector3(53.0121, -940.3606, 237.5849),
+                heading = 230,
+                model   = 1304959123,
+            },
+            stash    = vector3(65.1328, -938.5753, 237.5331),
+            wardrobe = vector3(51.5854, -945.9703, 238.0399),
+        },
+        {
+            id       = 1602,
+            label    = "1602",
+            price    = 250,
+            duration = 24,
+
+            door = {
+                id      = "peak_1602",
+                coords  = vector3(48.8064, -936.9359, 237.7816),
+                heading = 230.0001,
+                model   = 1304959123,
+            },
+            stash    = vector3(48.4700, -924.6527, 237.5107),
+            wardrobe = vector3(43.6288, -939.7410, 237.8334),
+        },
+        {
+            id       = 1603,
+            label    = "1603",
+            price    = 250,
+            duration = 24,
+
+            door = {
+                id      = "peak_1603",
+                coords  = vector3(65.9205, -924.9771, 237.7993),
+                heading = 50,
+                model   = 1304959123,
+            },
+            stash    = vector3(66.4021, -937.3507, 237.3758),
+            wardrobe = vector3(71.3744, -922.2831, 237.8963),
+        },
+        {
+            id       = 1604,
+            label    = "1604",
+            price    = 250,
+            duration = 24,
+
+            door = {
+                id      = "peak_1604",
+                coords  = vector3(61.8022, -921.4482, 237.7879),
+                heading = 50.0001,
+                model   = 1304959123,
+            },
+            stash    = vector3(49.6055, -923.2567, 237.5103),
+            wardrobe = vector3(63.2430, -915.8216, 237.8833),
+        },
     },
 }
